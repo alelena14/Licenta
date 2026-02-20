@@ -5,6 +5,5 @@ import org.springframework.data.jpa.repository.Query
 
 interface ProductRepository : JpaRepository<Product, Long> {
 
-    @Query("SELECT p FROM products p WHERE p.url IS NULL")
-    fun findAllWithoutImage(): List<Product>
+    fun findAllByUrlIsNull(): List<Product>
 }

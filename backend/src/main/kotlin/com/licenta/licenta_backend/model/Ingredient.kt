@@ -1,52 +1,80 @@
 package com.licenta.licenta_backend.model
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.Instant
 
 @Entity
 @Table(name = "ingredients")
-data class Ingredient(
+class Ingredient(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
-    val name: String,
-    val inciName: String? = null,
-    val category: String? = null,
-    val comedogenicRating: Int? = null,
-    val irritationPotential: String? = null,
-    val safetyScore: Double? = null,
+    @Column(nullable = false)
+    var name: String,
 
+    var inciName: String? = null,
+
+    @Column(columnDefinition = "text")
+    var category: String? = null,
+
+    var comedogenicRating: Int? = null,
+
+    @Column(columnDefinition = "text")
+    var irritationPotential: String? = null,
+
+    var safetyScore: Double? = null,
+
+    /* ---------- JSONB FIELDS ---------- */
+
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val function: List<String>? = null,
+    var function: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val benefits: List<String>? = null,
+    var benefits: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val concerns: List<String>? = null,
+    var concerns: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val suitableFor: List<String>? = null,
+    var suitableFor: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val avoidIf: List<String>? = null,
+    var avoidIf: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val pairsWellWith: List<String>? = null,
+    var pairsWellWith: List<String>? = null,
 
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb")
-    val avoidMixing: List<String>? = null,
+    var avoidMixing: List<String>? = null,
 
-    val description: String? = null,
-    val concentrationRange: String? = null,
+    /* ---------- TEXT FIELDS ---------- */
+
+    @Column(columnDefinition = "text")
+    var description: String? = null,
+
+    @Column(columnDefinition = "text")
+    var concentrationRange: String? = null,
+
+    /* ---------- AUDIT ---------- */
+
+    var enrichedAt: Instant? = null,
 
     @CreationTimestamp
-    val createdAt: Instant = Instant.now(),
+    var createdAt: Instant? = null,
 
     @UpdateTimestamp
-    val updatedAt: Instant = Instant.now(),
+    var updatedAt: Instant? = null
 )

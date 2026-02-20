@@ -1,7 +1,7 @@
 plugins {
-	kotlin("jvm") version "2.2.21"
-	kotlin("plugin.spring") version "2.2.21"
-	kotlin("plugin.jpa") version "2.2.21"
+	kotlin("jvm") version "1.9.24"
+	kotlin("plugin.spring") version "1.9.24"
+	kotlin("plugin.jpa") version "1.9.24"
 
 	id("org.springframework.boot") version "3.3.5"
 	id("io.spring.dependency-management") version "1.1.7"
@@ -39,14 +39,16 @@ dependencies {
 
 	implementation("com.google.firebase:firebase-admin:9.2.0")
 
-	// Pentru csv match
 	implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
 	implementation("com.univocity:univocity-parsers:2.9.0")
 	implementation("org.json:json:20231013")
 
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+	implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
 kotlin {

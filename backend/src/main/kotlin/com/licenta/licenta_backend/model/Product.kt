@@ -6,30 +6,30 @@ import java.time.Instant
 
 @Entity
 @Table(name = "products")
-data class Product(
+class Product(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
-    val brand: String,
-    val name: String,
+    var brand: String,
+    var name: String,
 
     @Column(name = "type")
-    val type: String,
+    var type: String,
 
-    val country: String? = null,
+    var country: String? = null,
     @Column(name = "url")
     var url: String? = null,
 
     @CreationTimestamp
-    val createdAt: Instant = Instant.now(),
+    var createdAt: Instant = Instant.now(),
 
     @UpdateTimestamp
-    val updatedAt: Instant = Instant.now(),
+    var updatedAt: Instant = Instant.now(),
 
     // relatii
     @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val ingredients: MutableSet<ProductIngredient> = mutableSetOf(),
+    var ingredients: MutableSet<ProductIngredient> = mutableSetOf(),
 
     @ManyToMany
     @JoinTable(
@@ -37,6 +37,6 @@ data class Product(
         joinColumns = [JoinColumn(name = "product_id")],
         inverseJoinColumns = [JoinColumn(name = "after_use_id")]
     )
-    val afterUse: MutableSet<AfterUse> = mutableSetOf(),
+    var afterUse: MutableSet<AfterUse> = mutableSetOf(),
 
 )
