@@ -26,7 +26,8 @@ class ImportService(
                     brand = b.brand,
                     name = b.name,
                     type = b.type ?: "unknown",
-                    country = b.country
+                    country = b.country,
+                    area = ""
                 )
             )
 

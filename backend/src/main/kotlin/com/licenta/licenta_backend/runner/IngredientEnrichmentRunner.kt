@@ -21,7 +21,7 @@ class IngredientEnrichmentRunner(
     override fun run(args: ApplicationArguments) {
 
         val ingredientIds = ingredientRepository
-            .findTopUnenrichedIngredients(50)
+            .findTopUnenrichedIngredients(100)
             .map { it.id }
 
         for (id in ingredientIds) {

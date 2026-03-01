@@ -11,4 +11,6 @@ interface ConcernRepository : JpaRepository<Concern, Long> {
 
     @Query("select c.code from Concern c")
     fun findAllCodes(): List<String>
+
+    fun findByCodeIn(codes: List<String>): List<Concern>
 }

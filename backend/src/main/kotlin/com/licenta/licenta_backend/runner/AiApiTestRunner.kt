@@ -1,5 +1,6 @@
 package com.licenta.licenta_backend.runner
 
+import com.licenta.licenta_backend.repository.ConcernRepository
 import com.licenta.licenta_backend.service.AiService
 import com.licenta.licenta_backend.service.RecommendationService
 import org.springframework.boot.CommandLineRunner
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component
 )
 class AiApiTestRunner(
     private val aiService: AiService,
-    private val recommendationService: RecommendationService
+    private val recommendationService: RecommendationService,
+    private val concernRepository: ConcernRepository
 ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
@@ -23,28 +25,43 @@ class AiApiTestRunner(
 //
 //        println("User input: $testInput")
 //
-//        // Extragem concerns
-//        val concerns = aiService.extractConcerns(testInput)
-//        println("Extracted concerns: $concerns")
+//        var (concernCodes, userArea) = aiService.extractConcerns(testInput)
 //
-//        if (concerns.isEmpty()) {
+//        println("Extracted concerns: $concernCodes")
+//        println("Detected area: $userArea")
+//
+//        if (concernCodes.isEmpty()) {
 //            println("No concerns detected. Exiting.")
 //            return
 //        }
 
-        val concerns = listOf(
+        var concernCodes = listOf(
             "oily_skin",
             "acne_comedonal",
             "enlarged_pores",
             "sebaceous_filaments"
         )
+        val userArea = "face"
 
-        val products = recommendationService.recommendProducts(concerns)
+        val concernEntities = concernRepository.findByCodeIn(concernCodes)
+
+        if (concernEntities.isEmpty()) {
+            println("No concerns found in DB.")
+            return
+        }
+
+        val concernIds = concernEntities.map { it.id }
+
+        val products = recommendationService.recommendProducts(
+            userConcernCodes = concernCodes,
+            userConcernIds = concernIds,
+            userArea = userArea
+        )
 
         println("\nRecommended products:")
 
         products.forEachIndexed { index, product ->
-            println("${index + 1}. ${product.name}")
+            println("${index + 1}. ${product.name} - ${product.id}")
         }
     }
 }

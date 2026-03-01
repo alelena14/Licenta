@@ -17,6 +17,9 @@ class Product(
     @Column(name = "type")
     var type: String,
 
+    @Column(name = "area")
+    var area: String,
+
     var country: String? = null,
     @Column(name = "url")
     var url: String? = null,
