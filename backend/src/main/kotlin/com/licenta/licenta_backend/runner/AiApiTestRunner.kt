@@ -1,8 +1,7 @@
 package com.licenta.licenta_backend.runner
 
+import com.licenta.licenta_backend.service.*
 import com.licenta.licenta_backend.repository.ConcernRepository
-import com.licenta.licenta_backend.service.AiService
-import com.licenta.licenta_backend.service.RecommendationService
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -16,7 +15,10 @@ import org.springframework.stereotype.Component
 class AiApiTestRunner(
     private val aiService: AiService,
     private val recommendationService: RecommendationService,
-    private val concernRepository: ConcernRepository
+    private val concernRepository: ConcernRepository,
+    private val productIngredientService: ProductIngredientService,
+    private val explanationBuilderService: ExplanationBuilderService,
+    private val groqExplanationService: AiExplanationService
 ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
@@ -35,12 +37,15 @@ class AiApiTestRunner(
 //            return
 //        }
 
-        var concernCodes = listOf(
+        println("===== AI TEST RUNNER STARTED =====")
+
+        val concernCodes = listOf(
             "oily_skin",
             "acne_comedonal",
             "enlarged_pores",
             "sebaceous_filaments"
         )
+
         val userArea = "face"
 
         val concernEntities = concernRepository.findByCodeIn(concernCodes)
@@ -58,10 +63,45 @@ class AiApiTestRunner(
             userArea = userArea
         )
 
-        println("\nRecommended products:")
+        if (products.isEmpty()) {
+            println("No products recommended.")
+            return
+        }
+
+        println("\n===== Recommended Products =====\n")
 
         products.forEachIndexed { index, product ->
-            println("${index + 1}. ${product.name} - ${product.id}")
+
+            println("${index + 1}. ${product.name} (ID: ${product.id})")
+
+            val ingredients =
+                productIngredientService.getIngredientsForProduct(product.id)
+
+            if (ingredients.isEmpty()) {
+                println("   No ingredients found for this product.")
+                println("--------------------------------------------------")
+                return@forEachIndexed
+            }
+
+            val explanationContext =
+                explanationBuilderService.buildExplanationContext(
+                    productName = product.name,
+                    ingredients = ingredients,
+                    userConcerns = concernCodes,
+                    userRoutineIngredients = emptyList()
+                )
+
+            println("   Structured Explanation Context:")
+            println(explanationContext)
+
+            val explanation =
+                groqExplanationService.generateExplanation(explanationContext)
+
+            println("\n   AI Explanation:")
+            println(explanation)
+            println("\n--------------------------------------------------\n")
         }
+
+        println("===== AI TEST RUNNER FINISHED =====")
     }
 }

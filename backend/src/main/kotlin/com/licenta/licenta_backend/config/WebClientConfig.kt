@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit
 @Configuration
 class WebClientConfig {
 
-    @Bean
+    @Bean("serpApiWebClient")
     fun serpApiWebClient(): WebClient =
         WebClient.builder()
             .baseUrl("https://serpapi.com")
             .build()
 
-    @Bean
+    @Bean("rapidApiWebClient")
     fun rapidApiWebClient(): WebClient {
 
         val httpClient = HttpClient.create()
@@ -34,6 +34,25 @@ class WebClientConfig {
 
         return WebClient.builder()
             .baseUrl("https://skincare-ingredient-analyzer.p.rapidapi.com")
+            .clientConnector(ReactorClientHttpConnector(httpClient))
+            .build()
+    }
+
+    @Bean("groqClient")
+    fun groqWebClient(aiApiProperties: AiApiProperties): WebClient {
+
+        val httpClient = HttpClient.create()
+            .responseTimeout(Duration.ofSeconds(20))
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000)
+            .doOnConnected { conn ->
+                conn
+                    .addHandlerLast(ReadTimeoutHandler(20, TimeUnit.SECONDS))
+                    .addHandlerLast(WriteTimeoutHandler(20, TimeUnit.SECONDS))
+            }
+
+        return WebClient.builder()
+            .baseUrl("https://api.groq.com/openai/v1")
+            .defaultHeader("Authorization", "Bearer ${aiApiProperties.apiKey}")
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .build()
     }

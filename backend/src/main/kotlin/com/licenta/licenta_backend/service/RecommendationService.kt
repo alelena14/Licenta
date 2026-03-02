@@ -63,7 +63,7 @@ class RecommendationService(
 
         return scoredProducts
             .sortedByDescending { it.second }
-            .take(10)
+            .take(5)
             .map { it.first }
     }
 

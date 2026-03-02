@@ -1,4 +1,6 @@
 .idea
-ai/.env
+/ai/.env
+.env
+.env.*
 backend/src/main/resources/application.properties
 backend/src/main/resources/application.yml

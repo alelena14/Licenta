@@ -18,7 +18,8 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 cur = conn.cursor()
 
-cur.execute("SELECT id, name, description, benefits, function, category, comedogenic_rating, irritation_potential FROM ingredients WHERE embedding IS NULL and category IS NOT NULL")
+cur.execute("SELECT id, name, description, benefits, function, category, comedogenic_rating, irritation_potential "
+            "FROM ingredients WHERE embedding IS NULL and category IS NOT NULL")
 rows = cur.fetchall()
 
 for row in rows:

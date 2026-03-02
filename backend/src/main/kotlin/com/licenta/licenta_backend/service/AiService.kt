@@ -2,26 +2,18 @@ package com.licenta.licenta_backend.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.licenta.licenta_backend.config.AiApiProperties
 import com.licenta.licenta_backend.repository.ConcernRepository
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class AiService(
-    aiApiProperties: AiApiProperties,
+    @Qualifier("groqClient") private val groqWebClient: WebClient,
     private val concernRepository: ConcernRepository
 ) {
 
     private val mapper = jacksonObjectMapper()
-
-    private val webClient = WebClient.builder()
-        .baseUrl("https://api.groq.com/openai/v1")
-        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ${aiApiProperties.apiKey}")
-        .build()
 
     fun extractConcerns(userInput: String): Pair<List<String>, String> {
 
@@ -71,7 +63,7 @@ class AiService(
 
         return try {
 
-            val response = webClient.post()
+            val response = groqWebClient.post()
                 .uri("/chat/completions")
                 .bodyValue(requestBody)
                 .retrieve()
