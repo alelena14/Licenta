@@ -1,7 +1,7 @@
 package com.example.frontend.data.repository
 
 import com.example.frontend.data.model.UserDto
-import com.example.frontend.data.network.UserApiService
+import com.example.frontend.data.network.remote.UserApiService
 import com.example.frontend.domain.repository.UserRepository
 import com.example.frontend.data.model.UserResponse
 import javax.inject.Inject

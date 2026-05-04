@@ -52,6 +52,7 @@ class AiExplanationService(
         
         Use ONLY the structured data below.
         Do NOT invent ingredients.
+        Do NOT repeat the explanation structure exactly.
         Keep the explanation under 150 words.
         Mention:
         - why it helps

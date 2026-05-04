@@ -17,7 +17,7 @@ class ImportRunner(
 ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
-        val csv = CsvLoader.loadCsv("data/productsHalf.csv")
+        val csv = CsvLoader.loadCsv("data/productsFull.csv")
         importService.importCsv(csv)
     }
 }

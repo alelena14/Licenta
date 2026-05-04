@@ -23,30 +23,21 @@ class AiApiTestRunner(
 
     override fun run(vararg args: String?) {
 
-//        val testInput = "I have bumps on my nose and very oily skin"
-//
-//        println("User input: $testInput")
-//
-//        var (concernCodes, userArea) = aiService.extractConcerns(testInput)
-//
-//        println("Extracted concerns: $concernCodes")
-//        println("Detected area: $userArea")
-//
-//        if (concernCodes.isEmpty()) {
-//            println("No concerns detected. Exiting.")
-//            return
-//        }
+        val testInput = "I have dark circles"
+
+        println("User input: $testInput")
+
+        var (concernCodes, userArea) = aiService.extractConcerns(testInput)
+
+        println("Extracted concerns: $concernCodes")
+        println("Detected area: $userArea")
+
+        if (concernCodes.isEmpty()) {
+            println("No concerns detected. Exiting.")
+            return
+        }
 
         println("===== AI TEST RUNNER STARTED =====")
-
-        val concernCodes = listOf(
-            "oily_skin",
-            "acne_comedonal",
-            "enlarged_pores",
-            "sebaceous_filaments"
-        )
-
-        val userArea = "face"
 
         val concernEntities = concernRepository.findByCodeIn(concernCodes)
 
@@ -58,9 +49,8 @@ class AiApiTestRunner(
         val concernIds = concernEntities.map { it.id }
 
         val products = recommendationService.recommendProducts(
-            userConcernCodes = concernCodes,
-            userConcernIds = concernIds,
-            userArea = userArea
+            concernIds = concernIds,
+            area = userArea
         )
 
         if (products.isEmpty()) {
@@ -72,10 +62,10 @@ class AiApiTestRunner(
 
         products.forEachIndexed { index, product ->
 
-            println("${index + 1}. ${product.name} (ID: ${product.id})")
+            println("${index + 1}. ${product.product.name} (ID: ${product.product.id})")
 
             val ingredients =
-                productIngredientService.getIngredientsForProduct(product.id)
+                productIngredientService.getIngredientsForProduct(product.product.id)
 
             if (ingredients.isEmpty()) {
                 println("   No ingredients found for this product.")
@@ -85,21 +75,21 @@ class AiApiTestRunner(
 
             val explanationContext =
                 explanationBuilderService.buildExplanationContext(
-                    productName = product.name,
+                    productName = product.product.name,
                     ingredients = ingredients,
                     userConcerns = concernCodes,
                     userRoutineIngredients = emptyList()
                 )
 
-            println("   Structured Explanation Context:")
-            println(explanationContext)
-
-            val explanation =
-                groqExplanationService.generateExplanation(explanationContext)
-
-            println("\n   AI Explanation:")
-            println(explanation)
-            println("\n--------------------------------------------------\n")
+//            println("   Structured Explanation Context:")
+//            println(explanationContext)
+//
+//            val explanation =
+//                groqExplanationService.generateExplanation(explanationContext)
+//
+//            println("\n   AI Explanation:")
+//            println(explanation)
+//            println("\n--------------------------------------------------\n")
         }
 
         println("===== AI TEST RUNNER FINISHED =====")

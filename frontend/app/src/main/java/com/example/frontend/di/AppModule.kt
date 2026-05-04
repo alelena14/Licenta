@@ -1,8 +1,12 @@
 package com.example.frontend.di
 
-import com.example.frontend.data.network.UserApiService
+import com.example.frontend.data.network.remote.RecommendationApi
+import com.example.frontend.data.network.remote.UserApiService
+import com.example.frontend.data.repository.RecommendationRepositoryImpl
 import com.example.frontend.data.repository.UserRepositoryImpl
+import com.example.frontend.domain.repository.RecommendationRepository
 import com.example.frontend.domain.repository.UserRepository
+import com.example.frontend.domain.usecase.GetRecommendationsUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -43,6 +47,27 @@ object AppModule {
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository {
         return UserRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecommendationApi(retrofit: Retrofit): RecommendationApi =
+        retrofit.create(RecommendationApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideRecommendationRepository(
+        api: RecommendationApi
+    ): RecommendationRepository {
+        return RecommendationRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetRecommendationsUseCase(
+        repository: RecommendationRepository
+    ): GetRecommendationsUseCase {
+        return GetRecommendationsUseCase(repository)
     }
 }
 

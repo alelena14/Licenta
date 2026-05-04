@@ -16,5 +16,3 @@ fun RootNavGraph(
         mainNavGraph(navController)
     }
 }
-
-

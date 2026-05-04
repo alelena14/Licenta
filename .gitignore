@@ -1,6 +1,15 @@
-.idea
-/ai/.env
+# IDE
+.idea/
+
+# Env files
 .env
 .env.*
+
+# Python venv
+venv/
+.venv/
+env/
+
+# Backend config (secrete)
 backend/src/main/resources/application.properties
 backend/src/main/resources/application.yml

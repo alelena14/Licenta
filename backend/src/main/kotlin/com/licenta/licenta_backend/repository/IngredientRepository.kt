@@ -22,5 +22,14 @@ interface IngredientRepository : JpaRepository<Ingredient, Long> {
     fun findTopUnenrichedIngredients(@Param("limit") limit: Int): List<Ingredient>
 
     fun findByName(name: String): Ingredient?
+
+    @Query("""
+    SELECT i FROM Ingredient i
+    WHERE i.id NOT IN (
+        SELECT ic.ingredientId FROM IngredientConcern ic
+    )
+    """)
+    fun findAllWithoutConcerns(): List<Ingredient>
+
 }
 
