@@ -14,9 +14,7 @@ class FirebaseConfig {
     @PostConstruct
     fun init() {
 
-        println("URL = " + System.getenv("SPRING_DATASOURCE_URL"))
-        println("USER = " + System.getenv("SPRING_DATASOURCE_USERNAME"))
-        
+
         val firebaseJson = System.getenv("FIREBASE_CREDENTIALS_JSON")
 
         val credentials =

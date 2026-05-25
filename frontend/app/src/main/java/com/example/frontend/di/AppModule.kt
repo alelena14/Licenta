@@ -27,7 +27,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "http://192.168.1.129:8080/"
+    private const val BASE_URL = "https://licenta-6ixc.onrender.com"
 
     @Provides
     @Singleton
