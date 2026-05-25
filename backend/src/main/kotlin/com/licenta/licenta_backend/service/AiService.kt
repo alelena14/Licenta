@@ -2,11 +2,17 @@ package com.licenta.licenta_backend.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.licenta.licenta_backend.dto.ChatIntent
+import com.licenta.licenta_backend.dto.IntentType
 import com.licenta.licenta_backend.repository.ConcernRepository
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 // ─── Data classes ────────────────────────────────────────────────────────────
 
 enum class Mechanism { TREATS, PREVENTS, SUPPORTS, CONTRAINDICATES, NONE }
@@ -49,11 +55,11 @@ data class ValidationResult(
 @Service
 class AiService(
     @Qualifier("groqClient") private val groqWebClient: WebClient,
+    @Qualifier("aiPythonClient") private val aiPythonClient: WebClient,
     private val concernRepository: ConcernRepository
 ) {
 
     private val mapper = jacksonObjectMapper()
-
     // ─────────────────────────────────────────────────────────────────────────
     // 1. extractConcerns
     // ─────────────────────────────────────────────────────────────────────────
@@ -113,6 +119,123 @@ class AiService(
             Pair(emptyList(), "face")
         }
     }
+
+    fun extractConcernsByArea(userInput: String): Map<String, List<String>> {
+
+        val validCodes = concernRepository.findAllCodes()
+
+        val prompt = """
+        You are a dermatology classification engine.
+ 
+        From the user description, extract skin concerns and group them by target area.
+ 
+        Rules:
+        - Only use concern codes from the valid list below.
+        - Areas must be exactly: "face", "eyes" or "other".
+        - A user can have concerns for MULTIPLE areas simultaneously.
+          Example: "I have acne and eye bags" → { "face": ["acne"], "eyes": ["eye_bags"] }
+        - dark_circles, eye_bags, puffiness, under_eye concerns always go to "eyes".
+        - Everything else goes to "face".
+        - Omit an area entirely if no concerns belong to it.
+        - If the concern is about the body, return other.
+        - If nothing matches return: {}
+        - Return JSON only, no markdown, no explanation.
+ 
+        Return format:
+        {
+          "face": ["concern_code1", "concern_code2"],
+          "eyes": ["concern_code3"]
+        }
+ 
+        User description:
+        $userInput
+ 
+        Valid concern codes:
+        ${validCodes.joinToString(", ")}
+    """.trimIndent()
+
+        val requestBody = buildRequestBody(
+            userPrompt   = prompt,
+            systemPrompt = "You are a precise classification engine. Return only valid JSON.",
+            maxTokens    = 200
+        )
+
+        return try {
+            val content = callGroq(requestBody) ?: return emptyMap()
+            val raw: Map<String, Any> = mapper.readValue(content)
+
+            raw.mapNotNull { (area, codes) ->
+                if (area !in listOf("face", "eyes")) return@mapNotNull null
+                val concernList = (codes as? List<*>)
+                    ?.filterIsInstance<String>()
+                    ?.filter { validCodes.contains(it) }
+                    ?: return@mapNotNull null
+                if (concernList.isEmpty()) return@mapNotNull null
+                area to concernList
+            }.toMap()
+
+        } catch (e: Exception) {
+            println("extractConcernsByArea error: ${e.message}")
+            emptyMap()
+        }
+    }
+
+    fun extractConcernsFromFace(file: MultipartFile): Pair<List<String>, String> {
+
+        val aiResult = analyzeFace(file) ?: return Pair(emptyList(), "face")
+
+        val predictions = aiResult["final_predictions"] as? List<Map<String, Any>> ?: emptyList()
+
+        val validCodes = concernRepository.findAllCodes()
+
+        val prompt = """
+        You are a dermatology AI.
+
+        Based on detected skin conditions from an image:
+        ${predictions.joinToString("\n") { "${it["label"]}: ${it["confidence"]}" }}
+
+        Map these into VALID concern codes from this list:
+        ${validCodes.joinToString(", ")}
+
+        Rules:
+        - Only return concerns from the valid list
+        - Be medically logical (e.g. eyebags → dark_circles)
+        - Return 1-3 most relevant concerns
+        - Also decide area: "face" or "eyes"
+
+        Return JSON only:
+        {
+          "concerns": ["code1","code2"],
+          "area": "face"
+        }
+    """.trimIndent()
+
+        val requestBody = buildRequestBody(
+            prompt,
+            systemPrompt = "You are a dermatology classification engine. Return only JSON.",
+            maxTokens = 200
+        )
+
+        return try {
+            val content = callGroq(requestBody) ?: return Pair(emptyList(), "face")
+
+            val result: Map<String, Any> = mapper.readValue(content)
+
+            val concerns = (result["concerns"] as? List<*>)
+                ?.filterIsInstance<String>()
+                ?.filter { validCodes.contains(it) }
+                ?: emptyList()
+
+            val area = result["area"] as? String ?: "face"
+
+            Pair(concerns, area)
+
+        } catch (e: Exception) {
+            println("extractConcernsFromFaceWithAI error: ${e.message}")
+            Pair(emptyList(), "face")
+        }
+    }
+
 
     // ─────────────────────────────────────────────────────────────────────────
     // 2. classifyIngredient
@@ -297,11 +420,130 @@ class AiService(
         }
     }
 
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 4. analyzeFace — se analizeaza fata cu modelul ai
+    // ─────────────────────────────────────────────────────────────────────────
+
+    fun analyzeFace(file: MultipartFile): Map<String, Any>? {
+        return try {
+            val response = aiPythonClient.post()
+                .uri("/analyze")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(
+                    BodyInserters.fromMultipartData("file", file.resource)
+                )
+                .retrieve()
+                .bodyToMono(String::class.java)
+                .block()
+
+            if (response.isNullOrBlank()) return null
+
+            mapper.readValue(response)
+
+        } catch (e: Exception) {
+            println("Face analysis error: ${e.message}")
+            null
+        }
+    }
+
+    fun detectIntent(message: String): ChatIntent {
+
+        val prompt = """
+        Analyze the user's skincare-related message and extract intent information.
+
+        Return ONLY valid JSON in this format:
+
+        {
+          "type": "RECOMMENDATION",
+          "concerns": [],
+          "productType": null,
+          "ingredient": null,
+          "productName": null,
+          "isFollowUp": false,
+          "rawQuery": ""
+        }
+
+        Allowed intent types:
+        - RECOMMENDATION
+        - PRODUCT_QUESTION
+        - INGREDIENT_QUESTION
+        - CASUAL
+        - BODY_CARE
+        - UNKNOWN
+
+        Rules:
+        - CASUAL = greetings, thanks, small talk
+        - BODY_CARE = body acne, body lotion, hands, legs, scalp, etc.
+        - INGREDIENT_QUESTION = asks about ingredients like niacinamide, retinol, vitamin c
+        - PRODUCT_QUESTION = asks about a specific product
+        - RECOMMENDATION = user wants products/routine suggestions
+        - UNKNOWN = unclear skincare intent
+
+        Examples:
+
+        User: "thank you!"
+        {
+          "type": "CASUAL",
+          "concerns": [],
+          "productType": null,
+          "ingredient": null,
+          "productName": null,
+          "isFollowUp": true,
+          "rawQuery": "thank you!"
+        }
+
+        User: "what does niacinamide do?"
+        {
+          "type": "INGREDIENT_QUESTION",
+          "concerns": [],
+          "productType": null,
+          "ingredient": "niacinamide",
+          "productName": null,
+          "isFollowUp": false,
+          "rawQuery": "what does niacinamide do?"
+        }
+
+        User: "recommend a serum for acne"
+        {
+          "type": "RECOMMENDATION",
+          "concerns": ["acne"],
+          "productType": "serum",
+          "ingredient": null,
+          "productName": null,
+          "isFollowUp": false,
+          "rawQuery": "recommend a serum for acne"
+        }
+
+        User message:
+        $message
+    """.trimIndent()
+
+        val requestBody = buildRequestBody(
+            userPrompt = message,
+            systemPrompt = prompt,
+            maxTokens = 250
+        )
+
+        val response = callGroq(requestBody) ?: return ChatIntent(
+            type = IntentType.UNKNOWN,
+            rawQuery = message
+        )
+
+        return try {
+            mapper.readValue(response, ChatIntent::class.java)
+        } catch (e: Exception) {
+            ChatIntent(
+                type = IntentType.UNKNOWN,
+                rawQuery = message
+            )
+        }
+    }
     // ─────────────────────────────────────────────────────────────────────────
     // Helper: apel Groq refolosibil
     // ─────────────────────────────────────────────────────────────────────────
 
-    private fun buildRequestBody(
+    fun buildRequestBody(
         userPrompt: String,
         systemPrompt: String = "You return only JSON.",
         maxTokens: Int = 500
@@ -315,7 +557,7 @@ class AiService(
         "max_tokens" to maxTokens
     )
 
-    private fun callGroq(requestBody: Map<String, Any>): String? {
+    fun callGroq(requestBody: Map<String, Any>): String? {
         return try {
             val response = groqWebClient.post()
                 .uri("/chat/completions")

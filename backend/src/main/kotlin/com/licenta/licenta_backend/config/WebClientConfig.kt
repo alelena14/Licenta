@@ -56,4 +56,11 @@ class WebClientConfig {
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .build()
     }
+
+    @Bean
+    fun aiPythonClient(): WebClient {
+        return WebClient.builder()
+            .baseUrl("http://localhost:8000")
+            .build()
+    }
 }

@@ -10,6 +10,6 @@ venv/
 .venv/
 env/
 
-# Backend config (secrete)
+# Backend config
 backend/src/main/resources/application.properties
 backend/src/main/resources/application.yml

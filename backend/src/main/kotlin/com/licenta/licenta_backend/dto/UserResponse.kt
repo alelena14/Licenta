@@ -1,4 +1,4 @@
-package com.licenta.licenta_backend.model
+package com.licenta.licenta_backend.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

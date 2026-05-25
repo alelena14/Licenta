@@ -1,12 +1,10 @@
 package com.example.frontend.navigation.bottomBar
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.*
@@ -15,12 +13,17 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun BottomNavBar(navController: NavHostController) {
+fun BottomNavBar(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
 
     val screens = listOf(
         BottomBarItem.Home,
         BottomBarItem.Profile,
-        BottomBarItem.Recommendations
+        BottomBarItem.ProductList,
+        BottomBarItem.Chat
+
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -28,43 +31,27 @@ fun BottomNavBar(navController: NavHostController) {
 
     val colors = MaterialTheme.colorScheme
 
-    Box(
+    NavigationBar(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        contentAlignment = Alignment.BottomCenter
+            .height(60.dp),
+
+        containerColor = colors.surface,
+
+        windowInsets = NavigationBarDefaults.windowInsets,
+
+        tonalElevation = 0.dp
     ) {
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = colors.surface
+        screens.forEach { screen ->
+
+            BottomBarItemView(
+                screen = screen,
+                currentDestination = currentDestination,
+                navController = navController
             )
-        ) {
-
-            NavigationBar(
-                containerColor = Color.Transparent,
-                tonalElevation = 0.dp
-            ) {
-
-                screens.forEach { screen ->
-
-                    BottomBarItemView(
-                        screen = screen,
-                        currentDestination = currentDestination,
-                        navController = navController
-                    )
-
-                }
-
-            }
-
         }
-
     }
-
 }
 
 @Composable
@@ -84,17 +71,18 @@ fun RowScope.BottomBarItemView(
 
         selected = isSelected,
 
+        interactionSource = remember { MutableInteractionSource() },
+
         onClick = {
             navController.navigate(screen.route) {
-
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
-
                 launchSingleTop = true
                 restoreState = true
             }
         },
+        alwaysShowLabel = false,
 
         colors = NavigationBarItemDefaults.colors(
             indicatorColor = Color.Transparent,
@@ -106,30 +94,16 @@ fun RowScope.BottomBarItemView(
 
         icon = {
 
-            Box(
-                modifier = Modifier
-                    .padding(6.dp)
-                    .background(
-                        if (isSelected)
-                            colors.primary.copy(alpha = 0.12f)
-                        else
-                            Color.Transparent,
-                        RoundedCornerShape(50)
-                    )
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-            ) {
-
-                Icon(
-                    imageVector = screen.icon,
-                    contentDescription = screen.title
-                )
-
-            }
+            Icon(
+                imageVector = screen.icon,
+                contentDescription = screen.title
+            )
 
         },
 
         label = {
-            Text(screen.title)
+            Text(text = screen.title,
+                modifier = Modifier.padding(bottom = 3.dp))
         }
 
     )

@@ -5,6 +5,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import jakarta.annotation.PostConstruct
 import org.springframework.context.annotation.Configuration
+import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 
 @Configuration
@@ -12,10 +13,22 @@ class FirebaseConfig {
 
     @PostConstruct
     fun init() {
-        val serviceAccount = FileInputStream("firebase-service-account.json")
+
+        val firebaseJson = System.getenv("FIREBASE_CREDENTIALS_JSON")
+
+        val credentials =
+            if (firebaseJson != null) {
+                GoogleCredentials.fromStream(
+                    ByteArrayInputStream(firebaseJson.toByteArray())
+                )
+            } else {
+                GoogleCredentials.fromStream(
+                    FileInputStream("firebase-service-account.json")
+                )
+            }
 
         val options = FirebaseOptions.builder()
-            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+            .setCredentials(credentials)
             .build()
 
         if (FirebaseApp.getApps().isEmpty()) {

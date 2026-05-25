@@ -79,4 +79,22 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun resetPassword(
+        email: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError(
+                        task.exception?.localizedMessage
+                            ?: "Failed to send reset email"
+                    )
+                }
+            }
+    }
+
 }

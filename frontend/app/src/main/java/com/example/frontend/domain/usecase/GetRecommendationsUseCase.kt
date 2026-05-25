@@ -10,6 +10,6 @@ class GetRecommendationsUseCase(
     suspend operator fun invoke(
         input: String
     ): RecommendationResponse {
-        return repository.getRecommendations(input)
+        return repository.getRecommendationsByText(input)
     }
 }

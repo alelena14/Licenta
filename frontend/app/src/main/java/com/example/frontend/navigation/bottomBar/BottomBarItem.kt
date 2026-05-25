@@ -1,11 +1,14 @@
 package com.example.frontend.navigation.bottomBar
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.frontend.presentation.Screen
+
+
 
 sealed class BottomBarItem(
     val route: String,
@@ -24,9 +27,15 @@ sealed class BottomBarItem(
         title = "Profile"
     )
 
-    object Recommendations : BottomBarItem(
-        route = Screen.Recommendations.route,
+    object ProductList : BottomBarItem(
+        route = Screen.ProductList.route,
         icon = Icons.Default.Face,
+        title = "Products"
+    )
+
+    object Chat : BottomBarItem(
+        route = Screen.Chat.route,
+        icon = Icons.Default.ChatBubbleOutline,
         title = "SkinAi"
     )
 }

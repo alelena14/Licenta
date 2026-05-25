@@ -1,4 +1,6 @@
 package com.licenta.licenta_backend.model
+
+import com.licenta.licenta_backend.dto.UserResponse
 import jakarta.persistence.*
 
 @Entity
