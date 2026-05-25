@@ -50,8 +50,9 @@ class WebClientConfig {
                     .addHandlerLast(WriteTimeoutHandler(20, TimeUnit.SECONDS))
             }
 
-        println("KEY=" + aiApiProperties.apiKey.take(15))
-        
+        println("ENV=" + System.getenv("GROQ_API_KEY"))
+        println("PROP=" + aiApiProperties.apiKey)
+
         return WebClient.builder()
             .baseUrl("https://api.groq.com/openai/v1")
             .defaultHeader("Authorization", "Bearer ${aiApiProperties.apiKey}")
