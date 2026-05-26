@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "ai")
 data class AiApiProperties(
     @Value("\${ai.api-key}")
-    private var apiKey: String = ""
+    var apiKey: String = ""
 )
