@@ -1,10 +1,10 @@
 package com.licenta.licenta_backend.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.stereotype.Component
 
-@Component
 @ConfigurationProperties(prefix = "ai")
 data class AiApiProperties(
-    var apiKey: String = ""
+    @Value("\${ai.api-key}")
+    private var apiKey: String = ""
 )
