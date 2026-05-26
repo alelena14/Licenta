@@ -3,6 +3,7 @@ package com.licenta.licenta_backend.config
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
@@ -39,24 +40,15 @@ class WebClientConfig {
     }
 
     @Bean("groqClient")
-    fun groqWebClient(aiApiProperties: AiApiProperties): WebClient {
+    fun groqWebClient(
+        @Value("\${GROQ_API_KEY}") apiKey: String
+    ): WebClient {
 
-        val httpClient = HttpClient.create()
-            .responseTimeout(Duration.ofSeconds(20))
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000)
-            .doOnConnected { conn ->
-                conn
-                    .addHandlerLast(ReadTimeoutHandler(20, TimeUnit.SECONDS))
-                    .addHandlerLast(WriteTimeoutHandler(20, TimeUnit.SECONDS))
-            }
-
-        println("ENV=" + System.getenv("GROQ_API_KEY"))
-        println("PROP=" + aiApiProperties.apiKey)
+        println("KEY=" + apiKey)
 
         return WebClient.builder()
             .baseUrl("https://api.groq.com/openai/v1")
-            .defaultHeader("Authorization", "Bearer ${aiApiProperties.apiKey}")
-            .clientConnector(ReactorClientHttpConnector(httpClient))
+            .defaultHeader("Authorization", "Bearer $apiKey")
             .build()
     }
 
