@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface UserConcernRepository :
     JpaRepository<UserConcern, Long> {
 
-    fun findAllByProfileId(profileId: Long): List<UserConcern>
+    fun findAllByProfileId(id: Long): List<UserConcern>
 
     fun deleteAllByProfileId(profileId: Long)
+
 }

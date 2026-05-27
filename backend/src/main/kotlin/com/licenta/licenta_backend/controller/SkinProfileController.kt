@@ -50,4 +50,15 @@ class SkinProfileController(
             request
         )
     }
+
+    @PostMapping("/concerns/from-analysis")
+    fun saveConcernsFromAnalysis(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody concerns: List<String>
+    ): ResponseEntity<Void> {
+        val token = authHeader.removePrefix("Bearer ")
+        val uid = FirebaseAuth.getInstance().verifyIdToken(token).uid
+        skinProfileService.saveConcernsFromAnalysis(uid, concerns)
+        return ResponseEntity.ok().build()
+    }
 }

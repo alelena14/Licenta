@@ -1,6 +1,7 @@
 package com.example.frontend.presentation.product
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
@@ -75,7 +76,6 @@ fun ProductScreen(
     val product    by viewModel.product.collectAsState()
     val saveState  by viewModel.saveState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Snackbar feedback
@@ -136,6 +136,9 @@ private fun ProductContent(
     onToggleSave: () -> Unit,
     modifier:     Modifier = Modifier
 ) {
+
+    var imageZoomed by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -159,25 +162,60 @@ private fun ProductContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(260.dp)
-                .background(Color(0xFFF0EBF8)),
+                .height(if (imageZoomed) 420.dp else 260.dp)
+                .background(Color.White)
+                .clickable { if (!product.url.isNullOrBlank()) imageZoomed = !imageZoomed }
+                .animateContentSize(),
             contentAlignment = Alignment.Center
         ) {
-            if(!product.url.isNullOrBlank()) {
+            if (!product.url.isNullOrBlank()) {
                 AsyncImage(
                     model = product.url,
                     contentDescription = product.name,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(12.dp),
-                    contentScale = ContentScale.Fit
+                        .padding(if (imageZoomed) 8.dp else 16.dp),
+                    contentScale = if (imageZoomed) ContentScale.Fit else ContentScale.Fit
                 )
+
+                // Hint "tap to zoom"
+                if (!imageZoomed) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Black.copy(alpha = 0.35f)
+                    ) {
+                        Text(
+                            text     = "Tap to zoom",
+                            fontSize = 10.sp,
+                            color    = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                } else {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Black.copy(alpha = 0.35f)
+                    ) {
+                        Text(
+                            text     = "Tap to collapse",
+                            fontSize = 10.sp,
+                            color    = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             } else {
                 Text(
-                    text = product.brand.take(2).uppercase(),
-                    fontSize = 22.sp,
+                    text       = product.brand.take(2).uppercase(),
+                    fontSize   = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFD4C5F0)
+                    color      = Color(0xFFD4C5F0)
                 )
             }
         }

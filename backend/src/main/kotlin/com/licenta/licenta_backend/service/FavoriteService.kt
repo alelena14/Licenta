@@ -5,6 +5,7 @@ import com.licenta.licenta_backend.controller.FavoriteNotFoundException
 import com.licenta.licenta_backend.dto.SaveFavoriteRequest
 import com.licenta.licenta_backend.dto.SaveFavoriteResponse
 import com.licenta.licenta_backend.model.Favorite
+import com.licenta.licenta_backend.repository.ConcernRepository
 import com.licenta.licenta_backend.repository.FavoriteRepository
 import com.licenta.licenta_backend.repository.ProductRepository
 import com.licenta.licenta_backend.repository.UserRepository
@@ -17,7 +18,8 @@ import org.springframework.web.server.ResponseStatusException
 class FavoriteService(
     private val favoriteRepository: FavoriteRepository,
     private val productRepository: ProductRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val concernRepository: ConcernRepository
 ) {
 
     @Transactional
@@ -27,11 +29,17 @@ class FavoriteService(
         if (favoriteRepository.existsByUidAndProductId(user.id, request.productId)) {
             throw FavoriteAlreadyExistsException("The product is already saved in favorites.")
         }
+
+        val displayConcerns = concernRepository
+            .findByCodeIn(request.concerns)
+            .joinToString(",") { it.displayName }
+            .takeIf { it.isNotEmpty() }
+
         val favorite = Favorite(
             uid         = user.id,
             productId   = request.productId,
             score       = request.score,
-            concerns    = request.concerns.joinToString(",").takeIf { it.isNotEmpty() },
+            concerns    = displayConcerns,
             explanation = request.explanation
         )
         val saved = favoriteRepository.save(favorite)
@@ -65,6 +73,7 @@ class FavoriteService(
                 savedAt     = fav.savedAt,
                 name        = product?.name,
                 brand       = product?.brand,
+                url         = product?.url,
                 type        = product?.type,
                 afterUse    = productRepository.findAfterUseLabelsByProductId(product.id),
                 score       = fav.score,

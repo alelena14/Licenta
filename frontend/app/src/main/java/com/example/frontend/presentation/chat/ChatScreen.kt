@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -268,6 +269,7 @@ fun ChatScreen(
                         viewModel.clearSaveSuccess()
                     }
                 }
+
                 AnimatedVisibility(visible = errorMessage != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
@@ -510,60 +512,88 @@ private fun ChatInputBar(
     isLoading: Boolean
 ) {
     Surface(color = Color.White.copy(alpha = 0.9f), shadowElevation = 8.dp) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-                .navigationBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Buton poza
-            Box(
-                modifier = Modifier.size(46.dp)
-                    .background(VioletPale, CircleShape)
-                    .clickable(enabled = !isLoading) { onPhotoClick() },
-                contentAlignment = Alignment.Center
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .navigationBarsPadding(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    Icons.Default.AddPhotoAlternate,
-                    "Attach photo",
-                    tint = if (isLoading) VioletLight else VioletMid,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            // Input
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Ask about your skin...", color = VioletLight, fontSize = 14.sp) },
-                shape = RoundedCornerShape(24.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = VioletMid, unfocusedBorderColor = VioletLight,
-                    focusedContainerColor = InputBg, unfocusedContainerColor = InputBg,
-                    focusedTextColor = Violet, unfocusedTextColor = Violet, cursorColor = VioletMid
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { onSend() }),
-                singleLine = true, maxLines = 1
-            )
-
-            // Send
-            Box(
-                modifier = Modifier.size(46.dp)
-                    .background(
-                        if (!isLoading && value.isNotBlank())
-                            Brush.verticalGradient(listOf(Color(0xFF9B7BFF), Color(0xFF6A3FB5)))
-                        else
-                            Brush.verticalGradient(listOf(VioletLight, VioletLight)),
-                        CircleShape
+                // Buton poza
+                Box(
+                    modifier = Modifier.size(46.dp)
+                        .background(VioletPale, CircleShape)
+                        .clickable(enabled = !isLoading) { onPhotoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.AddPhotoAlternate,
+                        "Attach photo",
+                        tint = if (isLoading) VioletLight else VioletMid,
+                        modifier = Modifier.size(22.dp)
                     )
-                    .clickable(enabled = !isLoading && value.isNotBlank()) { onSend() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+
+                // Input
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.weight(1f),
+                    placeholder = {
+                        Text(
+                            "Ask about your skin...",
+                            color = VioletLight,
+                            fontSize = 14.sp
+                        )
+                    },
+                    shape = RoundedCornerShape(24.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = VioletMid,
+                        unfocusedBorderColor = VioletLight,
+                        focusedContainerColor = InputBg,
+                        unfocusedContainerColor = InputBg,
+                        focusedTextColor = Violet,
+                        unfocusedTextColor = Violet,
+                        cursorColor = VioletMid
+                    ),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { onSend() }),
+                    singleLine = true, maxLines = 1
+                )
+
+                // Send
+                Box(
+                    modifier = Modifier.size(46.dp)
+                        .background(
+                            if (!isLoading && value.isNotBlank())
+                                Brush.verticalGradient(listOf(Color(0xFF9B7BFF), Color(0xFF6A3FB5)))
+                            else
+                                Brush.verticalGradient(listOf(VioletLight, VioletLight)),
+                            CircleShape
+                        )
+                        .clickable(enabled = !isLoading && value.isNotBlank()) { onSend() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Send,
+                        "Send",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
+
+            Text(
+                text = "SkinAI can make mistakes. \n Always consult a dermatologist for medical advice.",
+                fontSize = 10.sp,
+                color = VioletSoft.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 4.dp)
+                    .navigationBarsPadding()
+            )
         }
     }
 }

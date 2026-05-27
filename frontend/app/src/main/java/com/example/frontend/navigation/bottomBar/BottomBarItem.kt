@@ -1,41 +1,44 @@
 package com.example.frontend.navigation.bottomBar
 
+import android.graphics.drawable.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import com.example.frontend.presentation.Screen
-
+import androidx.compose.ui.res.vectorResource
+import com.example.frontend.R
 
 
 sealed class BottomBarItem(
     val route: String,
-    val icon: ImageVector,
+    val iconRes: Int,
     val title: String
 ) {
     object Home : BottomBarItem(
         route = Screen.Home.route,
-        icon = Icons.Default.Home,
+        iconRes = R.drawable.home_icon,
         title = "Home"
     )
 
     object Profile : BottomBarItem(
         route = Screen.Profile.route,
-        icon = Icons.Default.Person,
+        iconRes = R.drawable.profile_icon,
         title = "Profile"
     )
 
     object ProductList : BottomBarItem(
         route = Screen.ProductList.route,
-        icon = Icons.Default.Face,
+        iconRes = R.drawable.product_icon,
         title = "Products"
     )
 
     object Chat : BottomBarItem(
         route = Screen.Chat.route,
-        icon = Icons.Default.ChatBubbleOutline,
+        iconRes = R.drawable.chat_icon,
         title = "SkinAi"
     )
 }

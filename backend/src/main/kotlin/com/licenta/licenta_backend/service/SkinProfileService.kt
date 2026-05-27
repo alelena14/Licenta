@@ -15,7 +15,8 @@ import org.springframework.web.server.ResponseStatusException
 class SkinProfileService(
     private val userRepository: UserRepository,
     private val profileRepository: UserSkinProfileRepository,
-    private val concernRepository: UserConcernRepository,
+    private val userConcernRepository: UserConcernRepository,
+    private val concernRepository: ConcernRepository,
     private val savedChatRepository: SavedChatRepository,
     private val favoriteRepository: FavoriteRepository
 ) {
@@ -31,7 +32,7 @@ class SkinProfileService(
                 concerns = emptyList()
             )
 
-        val concerns = concernRepository
+        val concerns = userConcernRepository
             .findAllByProfileId(profile.id)
             .map { it.concernCode }
 
@@ -61,7 +62,7 @@ class SkinProfileService(
 
         val savedProfile = profileRepository.save(profile)
 
-        concernRepository.deleteAllByProfileId(savedProfile.id)
+        userConcernRepository.deleteAllByProfileId(savedProfile.id)
 
         val concerns = request.concerns.map {
             UserConcern(
@@ -70,7 +71,7 @@ class SkinProfileService(
             )
         }
 
-        concernRepository.saveAll(concerns)
+        userConcernRepository.saveAll(concerns)
 
         return SkinProfileResponse(
             skinType = savedProfile.skinType,
@@ -84,7 +85,7 @@ class SkinProfileService(
 
         val profile = profileRepository.findByUserId(user.id)
         val skinConcerns = if (profile != null)
-            concernRepository.findAllByProfileId(profile.id).size
+            userConcernRepository.findAllByProfileId(profile.id).size
         else 0
 
         return ProfileStatsResponse(
@@ -92,5 +93,32 @@ class SkinProfileService(
             savedProducts = favoriteRepository.countByUid(user.id),
             skinConcerns = skinConcerns
         )
+    }
+
+    fun saveConcernsFromAnalysis(firebaseUid: String, detectedConcerns: List<String>) {
+        val user = userRepository.findByFirebaseUid(firebaseUid)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+
+        val profile = profileRepository.findByUserId(user.id)
+            ?: UserSkinProfile(user = user).also { profileRepository.save(it) }
+
+        val existing = userConcernRepository.findAllByProfileId(profile.id)
+            .map { it.concernCode }.toSet()
+
+        val allConcerns = concernRepository.findAll()
+        val nameToCode = allConcerns.associateBy(
+            { it.displayName.lowercase().trim() },
+            { it.code }
+        )
+
+        val newConcerns = detectedConcerns
+            .mapNotNull { detected ->
+                nameToCode[detected.lowercase().trim()] ?: detected
+            }
+            .filter { it !in existing }
+
+        newConcerns.forEach { code ->
+            userConcernRepository.save(UserConcern(profile = profile, concernCode = code))
+        }
     }
 }

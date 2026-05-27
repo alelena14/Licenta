@@ -1,5 +1,6 @@
 package com.licenta.licenta_backend.controller
 
+import com.google.firebase.auth.FirebaseAuth
 import com.licenta.licenta_backend.dto.AnalysisResponse
 import com.licenta.licenta_backend.dto.ProductRecommendation
 import com.licenta.licenta_backend.dto.RecommendationRequest
@@ -7,7 +8,9 @@ import com.licenta.licenta_backend.dto.RecommendationResponse
 import com.licenta.licenta_backend.repository.ConcernRepository
 import com.licenta.licenta_backend.repository.ProductRepository
 import com.licenta.licenta_backend.service.AiService
+import com.licenta.licenta_backend.service.HomeRecommendationService
 import com.licenta.licenta_backend.service.RecommendationService
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 

@@ -299,7 +299,7 @@ fun ProfileScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(horizontal = 8.dp)
-                                            .height(48.dp),
+                                            .height(32.dp),
                                         shape = RoundedCornerShape(16.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7B57E8))
                                     ) {

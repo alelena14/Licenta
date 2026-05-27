@@ -6,6 +6,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.*
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -95,7 +97,7 @@ fun RowScope.BottomBarItemView(
         icon = {
 
             Icon(
-                imageVector = screen.icon,
+                imageVector = ImageVector.vectorResource(screen.iconRes),
                 contentDescription = screen.title
             )
 

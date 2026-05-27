@@ -1,18 +1,25 @@
 package com.example.frontend.navigation
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
-import com.example.frontend.presentation.MainScreen
+import com.example.frontend.MainScreen
+import com.example.frontend.navigation.bottomBar.BottomBarItem
 import com.example.frontend.presentation.Screen
 import com.example.frontend.presentation.chat.ChatHistoryScreen
-import com.example.frontend.presentation.chat.ChatScreen
 import com.example.frontend.presentation.product.ProductListScreen
 import com.example.frontend.presentation.product.ProductScreen
 import com.example.frontend.presentation.product.FavoriteScreen
+import com.example.frontend.presentation.recommendations.SkinAnalysisState
+import com.example.frontend.presentation.recommendations.PhotoConfirmScreen
+import com.example.frontend.presentation.recommendations.PhotoPickScreen
+import com.example.frontend.presentation.recommendations.PhotoPreviewScreen
+import com.example.frontend.presentation.recommendations.SkinAnalysisViewModel
 
 fun NavGraphBuilder.mainNavGraph(
     navController: NavHostController

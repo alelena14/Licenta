@@ -266,7 +266,7 @@ private fun SavedProductCard(
                 modifier         = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
-                    .background(Color(0xFFF0EBF8)),
+                    .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
                 if(!product.url.isNullOrBlank()) {

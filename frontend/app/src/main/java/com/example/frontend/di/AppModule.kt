@@ -2,14 +2,17 @@ package com.example.frontend.di
 
 import com.example.frontend.data.network.remote.ChatApi
 import com.example.frontend.data.network.remote.FavoriteApi
+import com.example.frontend.data.network.remote.HomeApi
 import com.example.frontend.data.network.remote.ProductListApi
 import com.example.frontend.data.network.remote.ProfileApi
 import com.example.frontend.data.network.remote.RecommendationApi
 import com.example.frontend.data.network.remote.SavedChatApi
 import com.example.frontend.data.network.remote.UserApiService
+import com.example.frontend.data.repository.HomeRepositoryImpl
 import com.example.frontend.data.repository.ProfileRepositoryImpl
 import com.example.frontend.data.repository.RecommendationRepositoryImpl
 import com.example.frontend.data.repository.UserRepositoryImpl
+import com.example.frontend.domain.repository.HomeRepository
 import com.example.frontend.domain.repository.ProfileRepository
 import com.example.frontend.domain.repository.RecommendationRepository
 import com.example.frontend.domain.repository.UserRepository
@@ -27,7 +30,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+
     private const val BASE_URL = "https://licenta-6ixc.onrender.com"
+    // private const val BASE_URL = "http://192.168.1.129:8080/"
 
     @Provides
     @Singleton
@@ -85,6 +90,15 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideHomeRepository(
+        api: HomeApi,
+        auth: FirebaseAuth
+    ): HomeRepository {
+        return HomeRepositoryImpl(api, auth)
+    }
+
+    @Provides
+    @Singleton
     fun provideGetRecommendationsUseCase(
         repository: RecommendationRepository
     ): GetRecommendationsUseCase {
@@ -113,6 +127,12 @@ object AppModule {
     @Singleton
     fun provideProfileApi(retrofit: Retrofit): ProfileApi {
         return retrofit.create(ProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeApi(retrofit: Retrofit): HomeApi {
+        return retrofit.create(HomeApi::class.java)
     }
 }
 

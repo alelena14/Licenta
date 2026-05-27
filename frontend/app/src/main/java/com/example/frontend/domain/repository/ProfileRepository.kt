@@ -11,4 +11,6 @@ interface ProfileRepository {
     suspend fun updateSkinProfile(request: UpdateSkinProfileRequest): SkinProfileDto
 
     suspend fun getStats(token: String): Result<ProfileStatsDto>
+
+    suspend fun saveConcernsFromAnalysis(token: String, concerns: List<String>): Result<Unit>
 }

@@ -69,12 +69,11 @@ class AuthViewModel @Inject constructor(
                 if (syncResult.isSuccess) {
                     _authState.value = AuthState.Success(token)
                 } else {
-                    // ȘI AICI MODIFICI:
                     val errorMessage = syncResult.exceptionOrNull()?.message ?: "Sincronizarea a esuat"
                     _authState.value = AuthState.Error(errorMessage)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Eroare la inregistrare")
+                _authState.value = AuthState.Error(e.message ?: "Error.")
             }
         }
     }

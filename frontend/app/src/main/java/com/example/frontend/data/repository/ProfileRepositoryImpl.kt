@@ -40,4 +40,14 @@ class ProfileRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun saveConcernsFromAnalysis(token: String, concerns: List<String>): Result<Unit> {
+        return try {
+            val response = api.saveConcernsFromAnalysis(token, concerns)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception("Error ${response.code()}"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

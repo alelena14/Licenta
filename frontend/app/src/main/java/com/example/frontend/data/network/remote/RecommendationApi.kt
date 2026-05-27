@@ -18,7 +18,7 @@ interface RecommendationApi {
         @Body request: RecommendationRequest
     ): RecommendationResponse
 
-    // ── Step 1: analizează poza → întoarce doar concerns ────────────────────
+    // ── Step 1: analizeaza poza → intoarce doar concerns ────────────────────
     @Multipart
     @POST("api/recommendations/face")
     suspend fun analyzeFace(

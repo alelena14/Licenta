@@ -119,7 +119,7 @@ class ChatService(
             return ChatResponse(
                 reply = """
                     I couldn't clearly detect skin concerns from the image.
-                    Try uploading a brighter front-facing photo.
+                    Please upload a brighter, close-up photo focused strictly on the affected area.
                 """.trimIndent()
             )
         }

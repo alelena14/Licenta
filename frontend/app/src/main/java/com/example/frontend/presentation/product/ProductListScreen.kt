@@ -441,24 +441,30 @@ private fun ProductCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            // Image
-            if(!product.url.isNullOrBlank()) {
-                AsyncImage(
-                    model = product.url,
-                    contentDescription = product.name,
-                    modifier = Modifier
-                        .width(140.dp)
-                        .height(100.dp)
-                        .padding(12.dp),
-                    contentScale = ContentScale.Fit
-                )
-            } else {
-                Text(
-                    text = product.brand.take(2).uppercase(),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFD4C5F0)
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!product.url.isNullOrBlank()) {
+                    AsyncImage(
+                        model = product.url,
+                        contentDescription = product.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Text(
+                        text = product.brand.take(2).uppercase(),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD4C5F0)
+                    )
+                }
             }
 
             Column(modifier = Modifier.padding(10.dp)) {
@@ -499,15 +505,17 @@ private fun ProductCard(
                 // AfterUse tags
                 if (product.afterUse.isNotEmpty()) {
 
-                    val hasLongTag = product.afterUse.any { it.length > 15 }
+                    val totalChars = product.afterUse.take(2).sumOf { it.length }
 
                     Spacer(Modifier.height(6.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
 
                         val tagsToShow =
-                            if (hasLongTag) product.afterUse.take(1)
-                            else product.afterUse.take(2)
+                            if (totalChars > 50)
+                                product.afterUse.take(1)
+                            else
+                                product.afterUse.take(2)
 
                         tagsToShow.forEach { tag ->
                             Surface(

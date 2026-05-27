@@ -44,8 +44,6 @@ class WebClientConfig {
         @Value("\${GROQ_API_KEY}") apiKey: String
     ): WebClient {
 
-        println("KEY=" + apiKey)
-
         return WebClient.builder()
             .baseUrl("https://api.groq.com/openai/v1")
             .defaultHeader("Authorization", "Bearer $apiKey")
