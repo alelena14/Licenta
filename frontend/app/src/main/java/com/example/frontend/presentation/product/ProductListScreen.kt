@@ -512,7 +512,7 @@ private fun ProductCard(
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
 
                         val tagsToShow =
-                            if (totalChars > 50)
+                            if (totalChars > 25)
                                 product.afterUse.take(1)
                             else
                                 product.afterUse.take(2)
