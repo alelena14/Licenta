@@ -71,4 +71,4 @@ def predict_image(image_path):
 # RUN
 # =========================
 if __name__ == "__main__":
-    predict_image("test_images/left.jpeg")
+    predict_image("final_dataset/images/1_jpg.rf.5f3a6648d5875b95e3336b6aa7c38184.jpg")
