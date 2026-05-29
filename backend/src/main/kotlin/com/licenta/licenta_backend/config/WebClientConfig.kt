@@ -53,7 +53,7 @@ class WebClientConfig {
     @Bean
     fun aiPythonClient(): WebClient {
         return WebClient.builder()
-            .baseUrl("http://localhost:8000")
+            .baseUrl("https://licenta-2-sdzm.onrender.com")
             .build()
     }
 }
