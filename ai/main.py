@@ -5,12 +5,22 @@ import tensorflow as tf
 from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 from PIL import Image
 import io
+import gdown
+import os
+
+MODEL_PATH = "final_multilabel_model.keras"
+
+if not os.path.exists(MODEL_PATH):
+    gdown.download(
+        "https://drive.google.com/uc?id=1uCm_uvHP7AIHpB7jDS7LgPyEFW7Gb2Nu",
+        MODEL_PATH,
+        quiet=False
+    )
+
+model = tf.keras.models.load_model(MODEL_PATH)
 
 app = FastAPI()
 
-# =========================
-# CONFIG
-# =========================
 IMG_SIZE = 224
 
 CLASS_NAMES = [
@@ -26,58 +36,33 @@ CLASS_NAMES = [
 
 THRESHOLD = 0.4
 
-# =========================
-# LOAD MODEL
-# =========================
-model = tf.keras.models.load_model("final_multilabel_model.keras")
-
-
-# =========================
-# PREPROCESS
-# =========================
 def preprocess(img):
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     img = preprocess_input(img)
     img = np.expand_dims(img, axis=0)
     return img
 
-
-# =========================
-# API ENDPOINT
-# =========================
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     contents = await file.read()
-
-    # convert bytes → OpenCV image
     image = Image.open(io.BytesIO(contents)).convert("RGB")
     image = np.array(image)
-
     inp = preprocess(image)
     preds = model.predict(inp, verbose=0)[0]
 
-    results = []
-
-    for i, val in enumerate(preds):
-        results.append({
-            "label": CLASS_NAMES[i],
-            "confidence": float(val)
-        })
+    results = [
+        {"label": CLASS_NAMES[i], "confidence": float(val)}
+        for i, val in enumerate(preds)
+    ]
 
     selected = [
-        {
-            "label": CLASS_NAMES[i],
-            "confidence": float(preds[i])
-        }
+        {"label": CLASS_NAMES[i], "confidence": float(preds[i])}
         for i in range(len(preds)) if preds[i] >= THRESHOLD
     ]
 
     if len(selected) == 0:
         best = int(np.argmax(preds))
-        selected = [{
-            "label": CLASS_NAMES[best],
-            "confidence": float(preds[best])
-        }]
+        selected = [{"label": CLASS_NAMES[best], "confidence": float(preds[best])}]
 
     return {
         "all_predictions": results,
