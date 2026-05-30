@@ -8,14 +8,14 @@ import io
 import os
 from huggingface_hub import hf_hub_download
 
-MODEL_PATH = "final_multilabel_model.keras"
+MODEL_PATH = "/opt/render/project/src/final_multilabel_model.keras"
 
 if not os.path.exists(MODEL_PATH):
     hf_hub_download(
         repo_id="alelena14/final_multilabel_model",
         filename="final_multilabel_model.keras",
-        local_dir=".",
-        token = os.environ.get("HF_TOKEN")
+        local_dir="/opt/render/project/src",
+        token=os.environ.get("HF_TOKEN")
     )
 
 model = tf.keras.models.load_model(MODEL_PATH)
