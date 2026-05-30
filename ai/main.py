@@ -14,7 +14,8 @@ if not os.path.exists(MODEL_PATH):
     gdown.download(
         "https://drive.google.com/uc?id=1uCm_uvHP7AIHpB7jDS7LgPyEFW7Gb2Nu",
         MODEL_PATH,
-        quiet=False
+        quiet=False,
+        fuzzy=True
     )
 
 model = tf.keras.models.load_model(MODEL_PATH)
