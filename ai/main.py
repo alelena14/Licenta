@@ -28,7 +28,13 @@ if not os.path.exists(MODEL_PATH):
     logger.info(f"Downloaded to: {result}")
     logger.info(f"File exists after download: {os.path.exists(MODEL_PATH)}")
 
-model = tf.keras.models.load_model(MODEL_PATH)
+logger.info("Loading model...")
+try:
+    model = tf.keras.models.load_model(MODEL_PATH)
+    logger.info("Model loaded successfully!")
+except Exception as e:
+    logger.error(f"Error loading model: {e}")
+    raise
 
 app = FastAPI()
 
