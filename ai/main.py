@@ -5,17 +5,17 @@ import tensorflow as tf
 from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 from PIL import Image
 import io
-import gdown
 import os
+from huggingface_hub import hf_hub_download
 
 MODEL_PATH = "final_multilabel_model.keras"
 
 if not os.path.exists(MODEL_PATH):
-    gdown.download(
-        "https://drive.google.com/uc?id=1uCm_uvHP7AIHpB7jDS7LgPyEFW7Gb2Nu",
-        MODEL_PATH,
-        quiet=False,
-        fuzzy=True
+    hf_hub_download(
+        repo_id="alelena14/final_multilabel_model",
+        filename="final_multilabel_model.keras",
+        local_dir=".",
+        token = os.environ.get("HF_TOKEN")
     )
 
 model = tf.keras.models.load_model(MODEL_PATH)
