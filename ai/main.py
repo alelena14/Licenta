@@ -7,16 +7,26 @@ from PIL import Image
 import io
 import os
 from huggingface_hub import hf_hub_download
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 MODEL_PATH = "/opt/render/project/src/final_multilabel_model.keras"
 
+logger.info(f"Model exists: {os.path.exists(MODEL_PATH)}")
+logger.info(f"HF_TOKEN present: {bool(os.environ.get('HF_TOKEN'))}")
+
 if not os.path.exists(MODEL_PATH):
-    hf_hub_download(
+    logger.info("Starting download...")
+    result = hf_hub_download(
         repo_id="alelena14/final_multilabel_model",
         filename="final_multilabel_model.keras",
         local_dir="/opt/render/project/src",
         token=os.environ.get("HF_TOKEN")
     )
+    logger.info(f"Downloaded to: {result}")
+    logger.info(f"File exists after download: {os.path.exists(MODEL_PATH)}")
 
 model = tf.keras.models.load_model(MODEL_PATH)
 
