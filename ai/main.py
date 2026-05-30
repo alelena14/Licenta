@@ -6,8 +6,8 @@ from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 from PIL import Image
 import io
 import os
-from huggingface_hub import hf_hub_download
 import logging
+from huggingface_hub import hf_hub_download
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,10 +28,14 @@ if not os.path.exists(MODEL_PATH):
     logger.info(f"Downloaded to: {result}")
     logger.info(f"File exists after download: {os.path.exists(MODEL_PATH)}")
     logger.info(f"File size: {os.path.getsize(MODEL_PATH)} bytes")
-    
+
+os.chdir("/opt/render/project/src")
+logger.info(f"CWD: {os.getcwd()}")
+logger.info(f"Files in dir: {os.listdir('.')}")
+
 logger.info("Loading model...")
 try:
-    model = tf.keras.models.load_model(MODEL_PATH)
+    model = tf.keras.models.load_model("final_multilabel_model.keras")
     logger.info("Model loaded successfully!")
 except Exception as e:
     logger.error(f"Error loading model: {e}")
