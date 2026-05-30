@@ -27,7 +27,8 @@ if not os.path.exists(MODEL_PATH):
     )
     logger.info(f"Downloaded to: {result}")
     logger.info(f"File exists after download: {os.path.exists(MODEL_PATH)}")
-
+    logger.info(f"File size: {os.path.getsize(MODEL_PATH)} bytes")
+    
 logger.info("Loading model...")
 try:
     model = tf.keras.models.load_model(MODEL_PATH)
