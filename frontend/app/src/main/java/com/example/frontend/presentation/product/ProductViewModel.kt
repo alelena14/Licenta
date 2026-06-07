@@ -102,7 +102,6 @@ class ProductViewModel @Inject constructor(
                         _saveState.value  = SaveState.Removed
                     }
                     is FavoriteResult.Error -> {
-                        Log.e("FAVORITE", "toggle error: ${result.message}")
                         _saveState.value = SaveState.Error(result.message)
                     }
                 }

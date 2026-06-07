@@ -44,9 +44,16 @@ class WebClientConfig {
         @Value("\${GROQ_API_KEY}") apiKey: String
     ): WebClient {
 
+        val httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30_000)
+            .responseTimeout(Duration.ofSeconds(120))
+
         return WebClient.builder()
             .baseUrl("https://api.groq.com/openai/v1")
             .defaultHeader("Authorization", "Bearer $apiKey")
+            .clientConnector(
+                ReactorClientHttpConnector(httpClient)
+            )
             .build()
     }
 

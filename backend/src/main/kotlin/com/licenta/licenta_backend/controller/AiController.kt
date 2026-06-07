@@ -14,6 +14,7 @@ class AiController(private val aiService: AiService) {
 
     @PostMapping("/face")
     fun analyzeFace(@RequestParam("file") file: MultipartFile): ResponseEntity<Any> {
+        println("PHOTO RECEIVED: ${file.originalFilename}")
         val result = aiService.analyzeFace(file)
             ?: return ResponseEntity.status(500).body("AI error")
 

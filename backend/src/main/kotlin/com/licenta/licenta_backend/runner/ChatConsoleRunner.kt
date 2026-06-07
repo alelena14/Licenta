@@ -69,7 +69,6 @@ class ChatConsoleRunner(
                 // Sterge "thinking..."
                 print("\r" + " ".repeat(20) + "\r")
 
-                // Afiseaza raspunsul
                 println("SkinAI: ${response.reply}")
 
                 // Afiseaza produsele recomandate daca exista

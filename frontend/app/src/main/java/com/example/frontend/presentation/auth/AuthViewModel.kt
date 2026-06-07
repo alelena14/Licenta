@@ -11,6 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.FirebaseTooManyRequestsException
 
 sealed class AuthState {
     object Idle : AuthState()
@@ -29,6 +34,15 @@ class AuthViewModel @Inject constructor(
     val authState: StateFlow<AuthState> = _authState
 
     fun login(email: String, password: String) {
+        if (email.isBlank()) {
+            _authState.value = AuthState.Error("Please enter your email.")
+            return
+        }
+
+        if (password.isBlank()) {
+            _authState.value = AuthState.Error("Please enter your password.")
+            return
+        }
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -41,11 +55,27 @@ class AuthViewModel @Inject constructor(
                 if (syncResult.isSuccess) {
                     _authState.value = AuthState.Success(token)
                 } else {
-                    val errorMessage = syncResult.exceptionOrNull()?.message ?: "Eroare necunoscuta backend"
+                    val errorMessage = syncResult.exceptionOrNull()?.message ?: "Unknown error"
                     _authState.value = AuthState.Error(errorMessage)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Eroare Login")
+
+                val message = when (e) {
+
+                    is FirebaseAuthInvalidCredentialsException ->
+                        "Incorrect email or password."
+
+                    is FirebaseNetworkException ->
+                        "No internet connection. Please try again."
+
+                    is FirebaseTooManyRequestsException ->
+                        "Too many login attempts. Please try again later."
+
+                    else ->
+                        "Unable to sign in. Please try again."
+                }
+
+                _authState.value = AuthState.Error(message)
             }
         }
     }
@@ -57,6 +87,26 @@ class AuthViewModel @Inject constructor(
         age: Int,
         profileImageUrl: String? = null
     ) {
+        if (username.isBlank()) {
+            _authState.value = AuthState.Error("Please enter a username.")
+            return
+        }
+
+        if (email.isBlank()) {
+            _authState.value = AuthState.Error("Please enter your email.")
+            return
+        }
+
+        if (password.isBlank()) {
+            _authState.value = AuthState.Error("Please enter a password.")
+            return
+        }
+
+        if (age <= 0) {
+            _authState.value = AuthState.Error("Please enter a valid age.")
+            return
+        }
+
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -73,7 +123,26 @@ class AuthViewModel @Inject constructor(
                     _authState.value = AuthState.Error(errorMessage)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Error.")
+
+                val message = when (e) {
+
+                    is FirebaseAuthUserCollisionException ->
+                        "An account with this email already exists."
+
+                    is FirebaseAuthWeakPasswordException ->
+                        "Password must contain at least 6 characters."
+
+                    is FirebaseAuthInvalidCredentialsException ->
+                        "Please enter a valid email address."
+
+                    is FirebaseNetworkException ->
+                        "No internet connection. Please try again."
+
+                    else ->
+                        "Unable to create account. Please try again."
+                }
+
+                _authState.value = AuthState.Error(message)
             }
         }
     }

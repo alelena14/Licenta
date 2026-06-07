@@ -330,7 +330,7 @@ fun ProfileScreen(
                                 MenuRow(label = "Chat History",   onClick = { rootNavController.navigate("chat_history") })
                                 HorizontalDivider(color = Color(0xFFF0EBF8), thickness = 1.dp,
                                     modifier = Modifier.padding(horizontal = 16.dp))
-                                MenuRow(label = "About SkinAI",   onClick = { /* TODO */ })
+                                MenuRow(label = "About SkinAI", onClick = { rootNavController.navigate("about_skinai") })
                             }
                         }
 

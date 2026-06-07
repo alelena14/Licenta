@@ -32,9 +32,14 @@ class SkinProfileService(
                 concerns = emptyList()
             )
 
+        val concernMap = concernRepository.findAll()
+            .associateBy({ it.code }, { it.displayName })
+
         val concerns = userConcernRepository
             .findAllByProfileId(profile.id)
-            .map { it.concernCode }
+            .map { concern ->
+                concernMap[concern.concernCode] ?: concern.concernCode
+            }
 
         return SkinProfileResponse(
             skinType = profile.skinType,

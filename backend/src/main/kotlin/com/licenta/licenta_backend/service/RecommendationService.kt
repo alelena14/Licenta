@@ -1,5 +1,7 @@
 package com.licenta.licenta_backend.service
 
+import com.licenta.licenta_backend.model.Concern
+import com.licenta.licenta_backend.model.IngredientConcern
 import com.licenta.licenta_backend.model.Product
 import com.licenta.licenta_backend.repository.IngredientConcernRepository
 import com.licenta.licenta_backend.repository.ProductRepository
@@ -69,7 +71,8 @@ class RecommendationService(
 
     fun recommendProducts(
         concernIds: List<Long>,
-        area: String
+        area: String,
+        productTypes: List<String>
     ): List<RecommendedProduct> {
 
         if (concernIds.isEmpty()) return emptyList()
@@ -77,7 +80,13 @@ class RecommendationService(
         val concernsById = concernRepository.findAllById(concernIds)
             .associateBy { it.id }
 
-        val products = productRepository.findByAreaWithIngredients(area)
+        val products = if (productTypes.isNotEmpty()) {
+
+
+            productRepository.findByAreaAndTypeInWithIngredients(area, productTypes)
+        } else {
+            productRepository.findByAreaWithIngredients(area)
+        }
         if (products.isEmpty()) return emptyList()
 
         val relevantIcByIngredient = ingredientConcernRepository
@@ -110,8 +119,8 @@ class RecommendationService(
     private fun scoreProduct(
         product: Product,
         concernIds: List<Long>,
-        concernsById: Map<Long, com.licenta.licenta_backend.model.Concern>,
-        relevantIcByIngredient: Map<Long, List<com.licenta.licenta_backend.model.IngredientConcern>>
+        concernsById: Map<Long, Concern>,
+        relevantIcByIngredient: Map<Long, List<IngredientConcern>>
     ): RecommendedProduct? {
 
         val ingredients = product.ingredients
@@ -127,7 +136,7 @@ class RecommendationService(
             val concern = concernsById[concernId] ?: continue
             val contributions = mutableListOf<IngredientContribution>()
             var concernScore = 0.0
-            var contraindicationScore = 0.0
+            contraindicationScore = 0.0
 
             for (pi in ingredients) {
 

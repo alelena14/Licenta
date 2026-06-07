@@ -27,10 +27,11 @@ class AiApiTestRunner(
 
         println("User input: $testInput")
 
-        var (concernCodes, userArea) = aiService.extractConcerns(testInput)
+        var (concernCodes, userArea, productTypes) = aiService.extractConcerns(testInput)
 
         println("Extracted concerns: $concernCodes")
         println("Detected area: $userArea")
+        println("Product types area: $productTypes")
 
         if (concernCodes.isEmpty()) {
             println("No concerns detected. Exiting.")
@@ -50,7 +51,8 @@ class AiApiTestRunner(
 
         val products = recommendationService.recommendProducts(
             concernIds = concernIds,
-            area = userArea
+            area = userArea,
+            productTypes = productTypes
         )
 
         if (products.isEmpty()) {

@@ -104,6 +104,19 @@ interface ProductRepository : JpaRepository<Product, Long> {
 
     @Query("""
     SELECT DISTINCT p FROM Product p
+    LEFT JOIN FETCH p.ingredients pi
+    LEFT JOIN FETCH pi.ingredient
+    WHERE p.area = :area
+      AND p.type IN :types
+""")
+    fun findByAreaAndTypeInWithIngredients(
+        @Param("area") area: String,
+        @Param("types") types: List<String>
+    ): List<Product>
+
+
+    @Query("""
+    SELECT DISTINCT p FROM Product p
     LEFT JOIN FETCH p.afterUse a
     WHERE (:search IS NULL OR LOWER(p.name) LIKE %:search% OR LOWER(p.brand) LIKE %:search%)
     AND   (:type IS NULL OR LOWER(p.type) = :type)
@@ -115,4 +128,13 @@ interface ProductRepository : JpaRepository<Product, Long> {
         @Param("afterUse") afterUse: String?,
         pageable: Pageable
     ): List<Product>
+
+
+    @Query("""
+    SELECT DISTINCT p.type
+    FROM Product p
+    WHERE p.type IS NOT NULL
+    ORDER BY p.type
+""")
+    fun findAllDistinctTypes(): List<String>
 }

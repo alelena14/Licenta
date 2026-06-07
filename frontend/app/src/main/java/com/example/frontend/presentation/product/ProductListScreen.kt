@@ -505,40 +505,52 @@ private fun ProductCard(
                 // AfterUse tags
                 if (product.afterUse.isNotEmpty()) {
 
-                    val totalChars = product.afterUse.take(2).sumOf { it.length }
+                    val tagsToShow = product.afterUse.take(2)
+                    val shouldStack = tagsToShow.joinToString(" ").length > 25
 
                     Spacer(Modifier.height(6.dp))
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (shouldStack) {
 
-                        val tagsToShow =
-                            if (totalChars > 25)
-                                product.afterUse.take(1)
-                            else
-                                product.afterUse.take(2)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            tagsToShow.forEach { tag ->
+                                TagChip(tag)
+                            }
+                        }
 
-                        tagsToShow.forEach { tag ->
-                            Surface(
-                                shape = RoundedCornerShape(20.dp),
-                                color = VioletPale
-                            ) {
-                                Text(
-                                    text = tag,
-                                    fontSize = 9.sp,
-                                    color = VioletLabel,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(
-                                        horizontal = 6.dp,
-                                        vertical = 3.dp
-                                    )
-                                )
+                    } else {
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            tagsToShow.forEach { tag ->
+                                TagChip(tag)
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TagChip(tag: String) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = VioletPale
+    ) {
+        Text(
+            text = tag,
+            fontSize = 9.sp,
+            color = VioletLabel,
+            modifier = Modifier.padding(
+                horizontal = 6.dp,
+                vertical = 3.dp
+            )
+        )
     }
 }
 

@@ -10,7 +10,8 @@ import org.springframework.web.multipart.MultipartFile
 
 private data class RecommendationGroup(
     val area: String,
-    val concerns: List<String>
+    val concerns: List<String>,
+    val productTypes: List<String>
 )
 
 @Service
@@ -45,7 +46,9 @@ class ChatService(
                 reply = "I didn't receive a message."
             )
 
+        val start = System.currentTimeMillis()
         val intent = aiService.detectIntent(lastUserMessage)
+        println("detectIntent: ${System.currentTimeMillis() - start} ms")
 
         when (intent.type) {
 
@@ -147,6 +150,9 @@ class ChatService(
         imageArea: String? = null
     ): ChatResponse {
 
+        val extraction = aiService.extractConcerns(intent.rawQuery)
+        val extractedProductTypes = extraction.third
+
         val concernsByArea = when {
 
             imageArea != null -> {
@@ -192,8 +198,7 @@ class ChatService(
             )
         }
 
-        val requestedType = intent.productType
-            ?.let { ProductTypeCategory.fromUserMessage(it) }
+        val hasRequestedTypes = extractedProductTypes.isNotEmpty()
 
         val recommendationGroups = mutableListOf<RecommendationGroup>()
 
@@ -204,15 +209,19 @@ class ChatService(
                 .forEach { group ->
 
                     recommendationGroups.add(
-                        RecommendationGroup(area, group)
+                        RecommendationGroup(
+                            area = area,
+                            concerns = group,
+                            productTypes = extractedProductTypes
+                        )
                     )
                 }
         }
 
         val maxPerGroup = when (recommendationGroups.size) {
-            1 -> if (requestedType != null) 15 else 5
-            2 -> if (requestedType != null) 8 else 3
-            else -> if (requestedType != null) 5 else 2
+            1 -> if (hasRequestedTypes) 15 else 5
+            2 -> if (hasRequestedTypes) 8 else 3
+            else -> if (hasRequestedTypes) 5 else 2
         }
 
         data class ScoredProduct(
@@ -229,7 +238,8 @@ class ChatService(
                 .map { it.id }
 
             val recommended = recommendationService
-                .recommendProducts(concernIds, group.area)
+                .recommendProducts(concernIds, group.area, group.productTypes)
+
 
             recommended.take(maxPerGroup).forEach { rec ->
 
@@ -258,34 +268,36 @@ class ChatService(
 
         val unique = allScored.distinctBy { it.dto.id }
 
-        var typeNotFound = false
+//        var typeNotFound = false
+//
+//        val filtered = if (requestedType != null) {
+//
+//            val faceFiltered = unique
+//                .filter { it.area == "face" }
+//                .filter {
+//                    ProductTypeCategory.fromDbType(it.dto.type) == requestedType
+//                }
+//
+//            val eyeProducts = unique
+//                .filter { it.area == "eyes" }
+//
+//            if (faceFiltered.isNotEmpty()) {
+//                (faceFiltered + eyeProducts)
+//                    .distinctBy { it.dto.id }
+//            } else {
+//                typeNotFound = unique.any { it.area == "face" }
+//                unique
+//            }
+//
+//        } else {
+//            unique
+//        }
 
-        val filtered = if (requestedType != null) {
-
-            val faceFiltered = unique
-                .filter { it.area == "face" }
-                .filter {
-                    ProductTypeCategory.fromDbType(it.dto.type) == requestedType
-                }
-
-            val eyeProducts = unique
-                .filter { it.area == "eyes" }
-
-            if (faceFiltered.isNotEmpty()) {
-                (faceFiltered + eyeProducts)
-                    .distinctBy { it.dto.id }
-            } else {
-                typeNotFound = unique.any { it.area == "face" }
-                unique
-            }
-
-        } else {
-            unique
-        }
+        val filtered = unique
 
         val finalProducts = filtered
             .map { it.dto }
-            .take(6)
+            .take(3)
 
         if (finalProducts.isEmpty()) {
             return ChatResponse(
@@ -309,9 +321,8 @@ class ChatService(
             userMessage = intent.rawQuery,
             history = request.messages.dropLast(1),
             context = context,
-            productType = requestedType?.displayName,
-            recommendationGroups = recommendationGroups,
-            typeNotFound = typeNotFound
+            productType = extractedProductTypes.firstOrNull(),
+            recommendationGroups = recommendationGroups
         )
 
         return ChatResponse(
@@ -441,8 +452,7 @@ class ChatService(
         history: List<ChatMessage>,
         context: String,
         productType: String?,
-        recommendationGroups: List<RecommendationGroup>,
-        typeNotFound: Boolean = false
+        recommendationGroups: List<RecommendationGroup>
     ): String {
 
         val historyFormatted = history
@@ -457,16 +467,6 @@ class ChatService(
                 "Some products target different concerns. Mention this naturally without creating explicit groups."
             else ""
 
-        val typeNote = when {
-            typeNotFound ->
-                "- The requested product type was not found."
-
-            productType != null ->
-                "- User specifically wants a $productType."
-
-            else -> ""
-        }
-
         val requestBody = aiService.buildRequestBody(
             userPrompt = if (historyFormatted.isNotBlank())
                 "Previous conversation:\n$historyFormatted\n\nUser: $userMessage"
@@ -478,19 +478,26 @@ class ChatService(
                 $context
 
                 Rules:
-                - Mention each product once only
-                - 3-5 sentences
-                - Warm and natural tone
-                - Explain why products fit the concerns
-                $typeNote
-                $groupNote
+                - Use plain text only
+                - Write 2-4 short paragraphs
+                - Recommend at most 3 products
+                - Mention each product only once
+                - Give one concise reason why each product is a good match
+                - Mention key ingredients only when especially relevant
+                - Keep the response under 120 words
                 - End with one short tip or question
+                $groupNote
             """.trimIndent(),
 
             maxTokens = 300
         )
 
-        return aiService.callGroq(requestBody)
+        val response = aiService.callGroq(requestBody)
+
+        return response
+            ?.replace("**", "")
+            ?.replace("*", "")
+            ?.trim()
             ?: "I found some products that may help your concerns."
     }
 

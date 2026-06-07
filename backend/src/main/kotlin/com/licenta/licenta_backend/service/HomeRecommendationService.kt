@@ -34,7 +34,7 @@ class HomeRecommendationService(
 
         if (concernIds.isEmpty()) { return emptyList() }
 
-        val recs = recommendationService.recommendProducts(concernIds, "face")
+        val recs = recommendationService.recommendProducts(concernIds, "face", emptyList())
 
         return recs.take(6).map { rec ->
             ProductRecommendation(

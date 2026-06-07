@@ -29,7 +29,7 @@ class RecommendationController(
     ): RecommendationResponse {
 
         // ── 1. Extrage concerns si area din input-ul userului ─────────────────
-        val (concernCodes, area) = aiService.extractConcerns(request.userInput)
+        val (concernCodes, area, productTypes) = aiService.extractConcerns(request.userInput)
 
         if (concernCodes.isEmpty()) {
             return RecommendationResponse(
@@ -42,7 +42,7 @@ class RecommendationController(
         val concernIds = concernRepository.findByCodeIn(concernCodes).map { it.id }
 
         // ── 3. Recomandari cu scoring ─────────────────────────────────────────
-        val recommended = recommendationService.recommendProducts(concernIds, area)
+        val recommended = recommendationService.recommendProducts(concernIds, area, productTypes)
 
 
         // ── 4. Mapeaza la response ────────────────────────────────────────────
@@ -79,7 +79,7 @@ class RecommendationController(
     ): RecommendationResponse {
 
         // ── 1. Extrage concerns si area din input-ul userului ─────────────────
-        val (concernCodes, area) = aiService.extractConcerns(concerns.joinToString(", " ))
+        val (concernCodes, area, productTypes) = aiService.extractConcerns(concerns.joinToString(", " ))
 
         if (concernCodes.isEmpty()) {
             return RecommendationResponse(
@@ -92,7 +92,7 @@ class RecommendationController(
         val concernIds = concernRepository.findByCodeIn(concernCodes).map { it.id }
 
         // ── 3. Recomandari cu scoring ─────────────────────────────────────────
-        val recommended = recommendationService.recommendProducts(concernIds, area)
+        val recommended = recommendationService.recommendProducts(concernIds, area, productTypes)
 
 
         // ── 4. Mapeaza la response ────────────────────────────────────────────

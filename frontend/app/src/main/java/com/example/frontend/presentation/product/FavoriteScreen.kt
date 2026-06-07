@@ -356,18 +356,52 @@ private fun SavedProductCard(
                 }
 
                 if (tagsToShow.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        tagsToShow.forEach { tag ->
-                            Surface(
-                                shape = RoundedCornerShape(20.dp),
-                                color = VioletPale
-                            ) {
-                                Text(
-                                    text     = tag,
-                                    fontSize = 9.sp,
-                                    color    = VioletLabel,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                                )
+
+                    val shouldStack = tagsToShow.joinToString(" ").length > 20
+
+                    if (shouldStack) {
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            tagsToShow.forEach { tag ->
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = VioletPale
+                                ) {
+                                    Text(
+                                        text = tag,
+                                        fontSize = 9.sp,
+                                        color = VioletLabel,
+                                        modifier = Modifier.padding(
+                                            horizontal = 6.dp,
+                                            vertical = 3.dp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                    } else {
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            tagsToShow.forEach { tag ->
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = VioletPale
+                                ) {
+                                    Text(
+                                        text = tag,
+                                        fontSize = 9.sp,
+                                        color = VioletLabel,
+                                        modifier = Modifier.padding(
+                                            horizontal = 6.dp,
+                                            vertical = 3.dp
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

@@ -13,6 +13,9 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.licenta.licenta_backend.repository.ProductRepository
+import jakarta.annotation.PostConstruct
+
 // ─── Data classes ────────────────────────────────────────────────────────────
 
 enum class Mechanism { TREATS, PREVENTS, SUPPORTS, CONTRAINDICATES, NONE }
@@ -56,54 +59,75 @@ data class ValidationResult(
 class AiService(
     @Qualifier("groqClient") private val groqWebClient: WebClient,
     @Qualifier("aiPythonClient") private val aiPythonClient: WebClient,
-    private val concernRepository: ConcernRepository
+    private val concernRepository: ConcernRepository,
+    private val productRepository: ProductRepository
 ) {
 
     private val mapper = jacksonObjectMapper()
+
+//    @PostConstruct
+//    fun warmup() {
+//        try {
+//            detectIntent("hello")
+//        } catch (_: Exception) {}
+//    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 1. extractConcerns
     // ─────────────────────────────────────────────────────────────────────────
 
-    fun extractConcerns(userInput: String): Pair<List<String>, String> {
+    fun extractConcerns(userInput: String): Triple<List<String>, String, List<String>> {
 
         val validCodes = concernRepository.findAllCodes()
 
+        val validProductTypes = productRepository.findAllDistinctTypes()
+
         val prompt = """
             You are a dermatology classification engine.
-            
+        
             From the user description extract:
             1) One or more concern codes from the provided list.
             2) The target area: one of ["face","eyes"].
-            
+            3) None or more product types from the provided product type list.
+        
             Rules:
-            - Only return concern codes from the list.
+            - Only return concern codes from the concern list.
+            - Only return product types from the product type list.
+            - If no product type is mentioned, return empty list for productTypes.
             - Target area must be one of the predefined values.
+            - Infer the most likely product types based on user intent.
+            - Return at most 3 product types.
             - Do NOT explain anything.
-            - dark circles and under eye bags have the area 'eyes'
+            - Dark circles and under eye bags have the area 'eyes'
             - Return JSON only:
-            
+        
             {
               "concerns":["code1","code2"],
-              "area":"face"
+              "area":"face",
+              "productTypes":["Serum","Face Cleanser"]
             }
-            
+        
             If nothing matches:
             {
               "concerns":[],
-              "area":"face"
+              "area":"face",
+              "productTypes":[]
             }
-            
+        
             User description:
             $userInput
-            
+        
             Valid concern codes:
             ${validCodes.joinToString(", ")}
+        
+            Valid product types:
+            ${validProductTypes.joinToString(", ")}
         """.trimIndent()
 
         val requestBody = buildRequestBody(prompt, systemPrompt = "You are a precise classification engine. Return only JSON.", maxTokens = 200)
 
         return try {
-            val content = callGroq(requestBody) ?: return Pair(emptyList(), "face")
+            val content = callGroq(requestBody) ?: return Triple(emptyList(), "face", emptyList())
             val result: Map<String, Any> = mapper.readValue(content)
 
             val concerns = (result["concerns"] as? List<*>)
@@ -111,12 +135,17 @@ class AiService(
                 ?.filter { validCodes.contains(it) }
                 ?: emptyList()
 
+            val productTypes = (result["productTypes"] as? List<*>)
+                ?.filterIsInstance<String>()
+                ?.filter { validProductTypes.contains(it) }
+                ?: emptyList()
+
             val area = result["area"] as? String ?: "face"
-            Pair(concerns, area)
+            Triple(concerns, area, productTypes)
 
         } catch (e: Exception) {
             println("extractConcerns error: ${e.message}")
-            Pair(emptyList(), "face")
+            Triple(emptyList(), "face", emptyList())
         }
     }
 
@@ -430,9 +459,7 @@ class AiService(
             val response = aiPythonClient.post()
                 .uri("/analyze")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(
-                    BodyInserters.fromMultipartData("file", file.resource)
-                )
+                .body(BodyInserters.fromMultipartData("file", file.resource))
                 .retrieve()
                 .bodyToMono(String::class.java)
                 .block()
@@ -442,8 +469,11 @@ class AiService(
             mapper.readValue(response)
 
         } catch (e: Exception) {
-            println("Face analysis error: ${e.message}")
-            null
+            e.printStackTrace()
+            throw RuntimeException(
+                "Face analysis service is currently unavailable.",
+                e
+            )
         }
     }
 
@@ -486,7 +516,6 @@ class AiService(
         {
           "type": "CASUAL",
           "concerns": [],
-          "productType": null,
           "ingredient": null,
           "productName": null,
           "isFollowUp": true,
@@ -497,7 +526,6 @@ class AiService(
         {
           "type": "INGREDIENT_QUESTION",
           "concerns": [],
-          "productType": null,
           "ingredient": "niacinamide",
           "productName": null,
           "isFollowUp": false,
@@ -508,7 +536,6 @@ class AiService(
         {
           "type": "RECOMMENDATION",
           "concerns": ["acne"],
-          "productType": "serum",
           "ingredient": null,
           "productName": null,
           "isFollowUp": false,
@@ -558,6 +585,7 @@ class AiService(
     )
 
     fun callGroq(requestBody: Map<String, Any>): String? {
+
         return try {
             val response = groqWebClient.post()
                 .uri("/chat/completions")
