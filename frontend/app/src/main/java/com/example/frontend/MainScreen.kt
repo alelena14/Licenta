@@ -126,7 +126,7 @@ fun MainScreen(
                         errorMessage = (state as? SkinAnalysisState.Error)?.message,
                         onBack       = { navController.popBackStack() },
                         onRetake     = { navController.popBackStack() },
-                        onAnalyse    = { skinAnalysisVm.analysePhoto(it) }
+                        onAnalyze    = { skinAnalysisVm.analyzePhoto(it) }
                     )
                 }
 

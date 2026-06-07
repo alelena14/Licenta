@@ -69,7 +69,7 @@ class ChatViewModel @Inject constructor(
         messages.add(
             UiMessage(
                 role = "assistant",
-                content = "Hi! I'm SkinAI\n\nTell me about your skin concerns or attach a photo and I'll recommend the best products for you."
+                content = "Hi! I'm skinAI\n\nTell me about your skin concerns or attach a photo and I'll recommend the best products for you."
             )
         )
     }
@@ -186,7 +186,7 @@ class ChatViewModel @Inject constructor(
     }
 
     private fun isSystemMessage(content: String): Boolean =
-        listOf("Hi! I'm SkinAI", "I analyzed your photo", "Let me find the best products", "analyzing")
+        listOf("Hi! I'm skinAI", "I analyzed your photo", "Let me find the best products", "analyzing")
             .any { content.contains(it, ignoreCase = true) }
 
     fun clearError() { errorMessage = null }

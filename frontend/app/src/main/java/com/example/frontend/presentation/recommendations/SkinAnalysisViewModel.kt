@@ -55,7 +55,7 @@ class SkinAnalysisViewModel @Inject constructor(
     }
 
     // Step 1
-    fun analysePhoto(uri: Uri) {
+    fun analyzePhoto(uri: Uri) {
         viewModelScope.launch {
             _state.value = SkinAnalysisState.Analysing
             try {
@@ -64,7 +64,9 @@ class SkinAnalysisViewModel @Inject constructor(
                 detectedConcerns = response.userConcerns
                 _state.value = SkinAnalysisState.ConcernsReady(response.userConcerns)
             } catch (e: Exception) {
-                _state.value = SkinAnalysisState.Error(e.message ?: "Analysis failed")
+                _state.value = SkinAnalysisState.Error(
+                    "We couldn't analyze your photo right now. Please try again in a few moments."
+                )
             }
         }
     }

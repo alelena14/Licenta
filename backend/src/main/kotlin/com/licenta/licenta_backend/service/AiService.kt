@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.licenta.licenta_backend.repository.ProductRepository
 import jakarta.annotation.PostConstruct
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 
 // ─── Data classes ────────────────────────────────────────────────────────────
 
@@ -455,26 +457,37 @@ class AiService(
     // ─────────────────────────────────────────────────────────────────────────
 
     fun analyzeFace(file: MultipartFile): Map<String, Any>? {
-        return try {
-            val response = aiPythonClient.post()
-                .uri("/analyze")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("file", file.resource))
-                .retrieve()
-                .bodyToMono(String::class.java)
-                .block()
 
-            if (response.isNullOrBlank()) return null
+        repeat(3) { attempt ->
 
-            mapper.readValue(response)
+            try {
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw RuntimeException(
-                "Face analysis service is currently unavailable.",
-                e
-            )
+                val response = aiPythonClient.post()
+                    .uri("/analyze")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData("file", file.resource))
+                    .retrieve()
+                    .bodyToMono(String::class.java)
+                    .block()
+
+                if (response.isNullOrBlank()) {
+                    throw RuntimeException("Empty response from AI service")
+                }
+
+                return mapper.readValue(response)
+
+            } catch (e: Exception) {
+
+                if (attempt < 2) {
+                    Thread.sleep(3000)
+                }
+            }
         }
+
+        throw ResponseStatusException(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Face analysis service is temporarily unavailable. Please try again in a few moments."
+        )
     }
 
     fun detectIntent(message: String): ChatIntent {

@@ -1,5 +1,6 @@
 package com.example.frontend.presentation.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,10 +17,13 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.frontend.R
 import com.example.frontend.presentation.Screen
 
 // ── Culori ───────────────────────────────────────────────────────────────────
@@ -159,23 +163,17 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(150.dp))
 
-            // Logo cerc violet cu icon alb
+            // Logo
             Box(
                 modifier = Modifier
-                    .size(88.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color(0xFF9B7BFF), Color(0xFF6A3FB5))
-                        ),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                    .size(90.dp)
+                    .clip(CircleShape)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Face,
+                Image(
+                    painter = painterResource(R.drawable.logo_cr),
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds
                 )
             }
 

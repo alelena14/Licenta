@@ -58,7 +58,7 @@ fun AboutSkinAiScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                     Column {
-                        Text("About SkinAI", fontSize = 18.sp,
+                        Text("About skinAI", fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = Color.White)
                         Text("How it works & what to expect", fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.7f))
@@ -100,7 +100,7 @@ fun AboutSkinAiScreen(navController: NavController) {
                             Text("✦", fontSize = 22.sp, color = Color.White)
                         }
                         Spacer(Modifier.height(12.dp))
-                        Text("SkinAI Analysis", fontSize = 17.sp,
+                        Text("skinAI Analysis", fontSize = 17.sp,
                             fontWeight = FontWeight.Bold, color = Violet)
                         Spacer(Modifier.height(4.dp))
                         Surface(shape = RoundedCornerShape(50.dp), color = VioletPale) {
@@ -191,7 +191,7 @@ fun AboutSkinAiScreen(navController: NavController) {
                         }
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "SkinAI is designed for cosmetic guidance only. Results are not a medical diagnosis and should not replace advice from a licensed dermatologist. Always consult a healthcare professional for skin conditions that concern you.",
+                            "skinAI is designed for cosmetic guidance only. Results are not a medical diagnosis and should not replace advice from a licensed dermatologist. Always consult a healthcare professional for skin conditions that concern you.",
                             fontSize = 12.sp, color = Color(0xFF712B13), lineHeight = 18.sp
                         )
                     }

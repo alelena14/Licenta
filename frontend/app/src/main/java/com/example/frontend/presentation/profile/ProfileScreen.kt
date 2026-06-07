@@ -137,7 +137,7 @@ fun ProfileScreen(
 
                                 // Username
                                 Text(
-                                    text       = s.user.username ?: "SkinAI User",
+                                    text       = s.user.username ?: "skinAI User",
                                     fontSize   = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color      = Color.White
@@ -171,7 +171,7 @@ fun ProfileScreen(
                                             modifier = Modifier.size(13.dp)
                                         )
                                         Text(
-                                            text       = "SkinAI Member",
+                                            text       = "skinAI Member",
                                             fontSize   = 12.sp,
                                             color      = Color.White,
                                             fontWeight = FontWeight.Medium
@@ -330,7 +330,7 @@ fun ProfileScreen(
                                 MenuRow(label = "Chat History",   onClick = { rootNavController.navigate("chat_history") })
                                 HorizontalDivider(color = Color(0xFFF0EBF8), thickness = 1.dp,
                                     modifier = Modifier.padding(horizontal = 16.dp))
-                                MenuRow(label = "About SkinAI", onClick = { rootNavController.navigate("about_skinai") })
+                                MenuRow(label = "About skinAI", onClick = { rootNavController.navigate("about_skinai") })
                             }
                         }
 

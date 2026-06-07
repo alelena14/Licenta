@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.frontend.R
 import com.example.frontend.data.model.ChatPrefillStore
 import com.example.frontend.data.model.ProductRecommendation
 import com.example.frontend.presentation.Screen
@@ -130,7 +133,7 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Analyse your skin",
+                    text = "Analyze your skin",
                     color = Violet,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -320,12 +323,16 @@ private fun ChatHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(40.dp).background(
-                    Brush.verticalGradient(listOf(Color(0xFFA98BFF), Color(0xFF6A3FB5))), CircleShape
-                ),
+                modifier = Modifier
+                    .size(50.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(26.dp))
+                Image(
+                    painter = painterResource(R.drawable.logo_cr),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(60.dp)
+                )
             }
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -585,7 +592,7 @@ private fun ChatInputBar(
             }
 
             Text(
-                text = "SkinAI can make mistakes. \n Always consult a dermatologist for medical advice.",
+                text = "skinAI can make mistakes. \n Always consult a dermatologist for medical advice.",
                 fontSize = 10.sp,
                 color = VioletSoft.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center,

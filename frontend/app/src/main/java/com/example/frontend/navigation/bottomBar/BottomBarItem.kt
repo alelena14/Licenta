@@ -39,6 +39,6 @@ sealed class BottomBarItem(
     object Chat : BottomBarItem(
         route = Screen.Chat.route,
         iconRes = R.drawable.chat_icon,
-        title = "SkinAi"
+        title = "skinAi"
     )
 }

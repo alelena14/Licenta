@@ -35,7 +35,7 @@ fun PhotoPreviewScreen(
     errorMessage: String?,
     onBack: () -> Unit,
     onRetake: () -> Unit,
-    onAnalyse: () -> Unit
+    onAnalyze: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -203,9 +203,9 @@ fun PhotoPreviewScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // ── Analyse button ────────────────────────────────────────────────
+            // ── Analyze button ────────────────────────────────────────────────
             Button(
-                onClick = onAnalyse,
+                onClick = onAnalyze,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
@@ -247,7 +247,7 @@ fun PhotoPreviewScreen(
                         ) {
                             Text("✦", color = Color.White, fontSize = 16.sp)
                             Text(
-                                text = "Analyse my skin",
+                                text = "Analyze my skin",
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
