@@ -33,6 +33,8 @@ import com.example.frontend.presentation.ui.DarkGreen
 import com.example.frontend.presentation.ui.PaleGreen
 import com.example.frontend.presentation.ui.VibrantGreen
 import com.example.frontend.data.model.ChatPrefillStore
+import com.example.frontend.data.model.ConcernDto
+import com.example.frontend.data.model.SkinTypeUi
 import com.google.firebase.auth.FirebaseAuth
 
 private val BgTop        = Color(0xFFCEB8F5)
@@ -44,14 +46,39 @@ private val VioletPale   = Color(0xFFF3EEFF)
 private val SubtitleGray = Color(0xFF8B70B8)
 private val CardWhite    = Color(0xFFFFFFFF)
 
-private val SKIN_TYPES = listOf("Oily", "Dry", "Combination", "Normal", "Sensitive")
-private val CONCERNS   = listOf(
-    "Dull Skin", "Hyperpigmentation", "Fine Lines", "Wrinkles", "PIH", "Inflammatory Acne",
-    "Whiteheads", "Uneven Skin Tone", "Sebaceous Filaments", "Irritated Skin",
-    "Hormonal Acne", "Rosacea Prone", "Dehydrated Skin", "Damaged Barrier",
-    "Under Eye Bags", "Blackheads", "Loss of Firmness",
-    "Enlarged Pores", "Congested Skin", "Melasma", "Dark Circles", "Comedonal Acne",
-    "Eczema Prone", "Flaky Skin"
+private val SKIN_TYPES = listOf(
+    SkinTypeUi("oily_skin", "Oily Skin"),
+    SkinTypeUi("dry_skin", "Dry Skin"),
+    SkinTypeUi("combination_skin_oily_tzone", "Combination Oily T-Zone"),
+    SkinTypeUi("normal", "Normal"),
+    SkinTypeUi("sensitive_skin", "Sensitive Skin")
+)
+
+private val CONCERNS = listOf(
+    ConcernDto("dull_skin", "Dull Skin"),
+    ConcernDto("hyperpigmentation", "Hyperpigmentation"),
+    ConcernDto("fine_lines", "Fine Lines"),
+    ConcernDto("wrinkles", "Wrinkles"),
+    ConcernDto("post_inflammatory_hyperpigmentation", "PIH"),
+    ConcernDto("acne_inflammatory", "Inflammatory Acne"),
+    ConcernDto("whiteheads", "Whiteheads"),
+    ConcernDto("uneven_skin_tone", "Uneven Skin Tone"),
+    ConcernDto("sebaceous_filaments", "Sebaceous Filaments"),
+    ConcernDto("irritated_skin", "Irritated Skin"),
+    ConcernDto("hormonal_acne", "Hormonal Acne"),
+    ConcernDto("rosacea_prone", "Rosacea Prone"),
+    ConcernDto("dehydrated_skin", "Dehydrated Skin"),
+    ConcernDto("damaged_barrier", "Damaged Barrier"),
+    ConcernDto("under_eye_bags", "Under Eye Bags"),
+    ConcernDto("blackheads", "Blackheads"),
+    ConcernDto("loss_of_firmness", "Loss of Firmness"),
+    ConcernDto("enlarged_pores", "Enlarged Pores"),
+    ConcernDto("congested_skin", "Congested Skin"),
+    ConcernDto("melasma", "Melasma"),
+    ConcernDto("dark_circles", "Dark Circles"),
+    ConcernDto("acne_comedonal", "Comedonal Acne"),
+    ConcernDto("eczema_prone", "Eczema Prone"),
+    ConcernDto("flaky_skin", "Flaky Skin")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +98,7 @@ fun ProfileScreen(
     LaunchedEffect(clicked) {
         if (clicked) {
             val concerns = skinProfile?.concerns
-                ?.joinToString(", ") { it.replace("_", " ") } ?: ""
+                ?.joinToString(", ") { it.displayName } ?: ""
             val skinType = skinProfile?.skinType ?: ""
 
             ChatPrefillStore.pendingPrefill = buildString {
@@ -286,10 +313,10 @@ fun ProfileScreen(
                                         verticalArrangement   = Arrangement.spacedBy(8.dp)
                                     ) {
                                         profile.skinType?.let {
-                                            ProfileChip(it.replaceFirstChar { c -> c.uppercase() })
+                                            ProfileChip(skinTypeDisplayName(it))
                                         }
                                         profile.concerns.forEach { concern ->
-                                            ProfileChip(concern.replace("_", " "))
+                                            ProfileChip(concern.displayName)
                                         }
 
                                     }
@@ -394,16 +421,20 @@ fun ProfileScreen(
 
                     Text("Skin type", fontWeight = FontWeight.Medium,
                         color = Violet, fontSize = 14.sp)
+
                     Spacer(Modifier.height(8.dp))
+
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement   = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         SKIN_TYPES.forEach { type ->
                             SelectableChip(
-                                label    = type,
-                                selected = viewModel.editSkinType == type,
-                                onClick  = { viewModel.onSkinTypeSelected(type) }
+                                label = type.displayName,
+                                selected = viewModel.editSkinType == type.code,
+                                onClick = {
+                                    viewModel.onSkinTypeSelected(type.code)
+                                }
                             )
                         }
                     }
@@ -419,9 +450,11 @@ fun ProfileScreen(
                     ) {
                         CONCERNS.forEach { concern ->
                             SelectableChip(
-                                label    = concern.replace("_", " "),
-                                selected = concern in viewModel.editConcerns,
-                                onClick  = { viewModel.onConcernToggled(concern) }
+                                label = concern.displayName,
+                                selected = concern.code in viewModel.editConcerns,
+                                onClick = {
+                                    viewModel.onConcernToggled(concern.code)
+                                }
                             )
                         }
                     }
@@ -546,3 +579,13 @@ private fun SelectableChip(label: String, selected: Boolean, onClick: () -> Unit
         )
     }
 }
+
+fun skinTypeDisplayName(code: String?): String =
+    when (code) {
+        "oily_skin" -> "Oily Skin"
+        "dry_skin" -> "Dry Skin"
+        "combination_skin_oily_tzone" -> "Combination Oily T-Zone"
+        "normal" -> "Normal"
+        "sensitive_skin" -> "Sensitive Skin"
+        else -> code.orEmpty()
+    }

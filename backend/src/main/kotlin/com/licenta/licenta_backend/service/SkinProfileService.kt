@@ -1,5 +1,6 @@
 package com.licenta.licenta_backend.service
 
+import com.licenta.licenta_backend.dto.ConcernDto
 import com.licenta.licenta_backend.dto.ProfileStatsResponse
 import com.licenta.licenta_backend.dto.SkinProfileResponse
 import com.licenta.licenta_backend.dto.UpdateSkinProfileRequest
@@ -33,12 +34,17 @@ class SkinProfileService(
             )
 
         val concernMap = concernRepository.findAll()
-            .associateBy({ it.code }, { it.displayName })
+            .associateBy { it.code }
 
         val concerns = userConcernRepository
             .findAllByProfileId(profile.id)
-            .map { concern ->
-                concernMap[concern.concernCode] ?: concern.concernCode
+            .mapNotNull { userConcern ->
+                concernMap[userConcern.concernCode]?.let { concern ->
+                    ConcernDto(
+                        code = concern.code,
+                        displayName = concern.displayName
+                    )
+                }
             }
 
         return SkinProfileResponse(
@@ -64,23 +70,34 @@ class SkinProfileService(
             )
 
         profile.skinType = request.skinType
-
         val savedProfile = profileRepository.save(profile)
 
         userConcernRepository.deleteAllByProfileId(savedProfile.id)
 
-        val concerns = request.concerns.map {
+        val userConcerns = request.concerns.map { code ->
             UserConcern(
                 profile = savedProfile,
-                concernCode = it
+                concernCode = code
             )
         }
 
-        userConcernRepository.saveAll(concerns)
+        userConcernRepository.saveAll(userConcerns)
+
+        val concernMap = concernRepository.findAll()
+            .associateBy { it.code }
+
+        val responseConcerns = request.concerns.mapNotNull { code ->
+            concernMap[code]?.let { concern ->
+                ConcernDto(
+                    code = concern.code,
+                    displayName = concern.displayName
+                )
+            }
+        }
 
         return SkinProfileResponse(
             skinType = savedProfile.skinType,
-            concerns = request.concerns
+            concerns = responseConcerns
         )
     }
 

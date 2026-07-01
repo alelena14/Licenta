@@ -197,6 +197,19 @@ class ChatService(
                 """.trimIndent()
             )
         }
+        val totalConcerns = concernsByArea.values.flatten().distinct().size
+
+        if (totalConcerns > 6) {
+            return ChatResponse(
+                reply = """
+            I noticed that your request includes a large number of skin concerns.
+            
+            It's uncommon for all of these concerns to be present at the same time. To provide recommendations that are as accurate and personalized as possible, please use the Skin Analysis feature or send a clear photo of the affected area.
+            
+            Once the analysis is complete, I'll recommend products based on the concerns that are actually detected.
+            """.trimIndent()
+            )
+        }
 
         val hasRequestedTypes = extractedProductTypes.isNotEmpty()
 
@@ -552,7 +565,7 @@ class ChatService(
     // PRODUCT EXPLANATION
     // ─────────────────────────────────────────────────────────
 
-    private fun buildExplanation(
+    fun buildExplanation(
         rec: RecommendedProduct
     ): String {
 

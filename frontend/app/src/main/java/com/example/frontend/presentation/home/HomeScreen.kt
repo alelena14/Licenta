@@ -242,8 +242,13 @@ fun HomeScreen(
                             HomeProductCard(
                                 product = product,
                                 onClick = {
-                                    viewModel.productStore.openFromList(product.id)
-                                    rootNavController.navigate("product")
+                                    viewModel.productStore.openFromChat(
+                                        product = product,
+                                        score = product.score,
+                                        concerns = product.concerns
+                                    )
+
+                                    rootNavController.navigate(Screen.Product.route)
                                 }
                             )
                         }

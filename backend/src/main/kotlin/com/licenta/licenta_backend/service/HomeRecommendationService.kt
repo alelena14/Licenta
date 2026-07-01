@@ -11,7 +11,8 @@ class HomeRecommendationService(
     val concernRepository: UserConcernRepository,
     val skinConcernRepository: ConcernRepository,
     val recommendationService: RecommendationService,
-    val productRepository: ProductRepository
+    val productRepository: ProductRepository,
+    val chatService: ChatService
 ) {
     fun getHomeRecommendations(firebaseUid: String): List<ProductRecommendation> {
         val user = userRepository.findByFirebaseUid(firebaseUid) ?: return emptyList()
@@ -46,9 +47,10 @@ class HomeRecommendationService(
                 tags        = productRepository.findAfterUseLabelsByProductId(rec.product.id),
                 ingredients = productRepository.findIngredients(rec.product.id),
                 score       = rec.normalizedScore,
-                explanation = rec.product.name,
+                explanation = chatService.buildExplanation(rec),
                 warnings    = rec.warnings,
-                url         = rec.product.url
+                url         = rec.product.url,
+                concerns = concerns
             )
         }
     }

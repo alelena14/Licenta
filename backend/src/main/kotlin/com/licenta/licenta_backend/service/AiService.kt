@@ -222,17 +222,27 @@ class AiService(
         val prompt = """
         You are a dermatology AI.
 
-        Based on detected skin conditions from an image:
+        The following are AI predictions with confidence scores between 0 and 1.
+
+        Only use predictions with confidence higher then 0.4.
+        Ignore predictions with low confidence.
+        
+        If no prediction has sufficient confidence, return an empty concerns list.
+        
+        Predictions:
         ${predictions.joinToString("\n") { "${it["label"]}: ${it["confidence"]}" }}
 
         Map these into VALID concern codes from this list:
         ${validCodes.joinToString(", ")}
 
         Rules:
-        - Only return concerns from the valid list
-        - Be medically logical (e.g. eyebags → dark_circles)
-        - Return 1-3 most relevant concerns
-        - Also decide area: "face" or "eyes"
+        - Confidence below 0.4 should normally be ignored.
+        - Do not infer additional concerns from low-confidence predictions.
+        - If all predictions are low confidence, return:
+        {
+          "concerns": [],
+          "area": "face"
+        }
 
         Return JSON only:
         {

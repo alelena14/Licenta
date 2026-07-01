@@ -27,11 +27,7 @@ if not os.path.exists(MODEL_PATH):
     )
     logger.info(f"Downloaded to: {result}")
     logger.info(f"File exists after download: {os.path.exists(MODEL_PATH)}")
-    logger.info(f"File size: {os.path.getsize(MODEL_PATH)} bytes")
 
-os.chdir("/opt/render/project/src")
-logger.info(f"CWD: {os.getcwd()}")
-logger.info(f"Files in dir: {os.listdir('.')}")
 
 logger.info("Loading model...")
 try:
@@ -85,11 +81,6 @@ async def analyze(file: UploadFile = File(...)):
     if len(selected) == 0:
         best = int(np.argmax(preds))
         selected = [{"label": CLASS_NAMES[best], "confidence": float(preds[best])}]
-
-    logger.info("Predictions:")
-
-    for label, score in zip(CLASS_NAMES, preds):
-        logger.info(f"{label}: {score:.4f}")
         
     return {
         "all_predictions": results,

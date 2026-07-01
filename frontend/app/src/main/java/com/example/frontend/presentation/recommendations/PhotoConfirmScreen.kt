@@ -43,6 +43,60 @@ fun PhotoConfirmScreen(
         mutableStateOf(selectedConcerns)
     }
 
+
+    if (allConcerns.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFFF7F4FF),
+                            Color.White
+                        )
+                    )
+                )
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "No skin concerns detected",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Violet,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "We couldn't confidently identify any skin concerns in this photo.\n\nYou can try taking another photo in natural light and make sure the affected skin area is clearly visible.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        onGetRecs(emptyList())
+                    },
+                    shape = RoundedCornerShape(50.dp)
+                ) {
+                    Text("Continue")
+                }
+            }
+        }
+
+        return
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()

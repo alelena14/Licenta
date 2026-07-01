@@ -11,5 +11,6 @@ data class ProductRecommendation(
     val ingredients: List<String>,
     val explanation: String,
     val warnings: List<String>,
-    val url: String?
+    val url: String?,
+    val concerns: List<String> = emptyList()
 )

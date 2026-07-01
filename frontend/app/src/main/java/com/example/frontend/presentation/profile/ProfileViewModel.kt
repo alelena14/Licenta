@@ -79,9 +79,13 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun openEdit() {
-        editSkinType  = skinProfile?.skinType
-        editConcerns  = skinProfile?.concerns?.toSet() ?: emptySet()
-        isEditing     = true
+        editSkinType = skinProfile?.skinType
+        editConcerns = skinProfile?.concerns
+            ?.map { it.code }
+            ?.toSet()
+            ?: emptySet()
+
+        isEditing = true
     }
 
     fun closeEdit() {
