@@ -20,13 +20,13 @@ class ImportService(
     @Transactional
     fun importCsv(list: List<Csv>) {
 
-        // 🔥 preload produse existente (FOARTE IMPORTANT)
+        // preload produse existente (FOARTE IMPORTANT)
         val existingProducts = productRepo.findAll()
             .associateBy {
                 (it.name.trim().lowercase() + "|" + (it.brand?.trim()?.lowercase() ?: ""))
             }.toMutableMap()
 
-        // 🔥 preload ingrediente existente
+        // preload ingrediente existente
         val existingIngredients = ingredientRepo.findAll()
             .associateBy { it.name.trim().lowercase() }
             .toMutableMap()
@@ -37,7 +37,7 @@ class ImportService(
             val brand = b.brand.trim()
             val key = name.lowercase() + "|" + brand.lowercase()
 
-            // ✅ produs existent sau nou
+            // produs existent sau nou
             val product = existingProducts[key] ?: run {
                 val newProduct = productRepo.save(
                     Product(
@@ -79,7 +79,7 @@ class ImportService(
                     ingredientId = ingredient.id
                 )
 
-                // 🔥 evită duplicate în join
+                // evită duplicate în join
                 if (!productIngredientRepo.existsById(piId)) {
                     val pi = ProductIngredient(
                         id = piId,
@@ -108,7 +108,7 @@ class ImportService(
                 val au = afterUseRepo.findByLabel(label)
                     ?: afterUseRepo.save(AfterUse(label = label))
 
-                // 🔥 evită Lazy + duplicate
+                // evită Lazy + duplicate
                 if (!product.afterUse.any { it.label == au.label }) {
                     product.afterUse.add(au)
                 }

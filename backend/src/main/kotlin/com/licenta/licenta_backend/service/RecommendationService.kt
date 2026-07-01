@@ -81,8 +81,6 @@ class RecommendationService(
             .associateBy { it.id }
 
         val products = if (productTypes.isNotEmpty()) {
-
-
             productRepository.findByAreaAndTypeInWithIngredients(area, productTypes)
         } else {
             productRepository.findByAreaWithIngredients(area)
@@ -125,7 +123,7 @@ class RecommendationService(
 
         val ingredients = product.ingredients
         if (ingredients.isEmpty()) return null
-        var contraindicationScore = 0.0
+        var contraindicationScore: Double
 
         val concernBreakdown = mutableListOf<ConcernScore>()
         val warnings = mutableListOf<String>()
@@ -135,7 +133,7 @@ class RecommendationService(
 
             val concern = concernsById[concernId] ?: continue
             val contributions = mutableListOf<IngredientContribution>()
-            var concernScore = 0.0
+            var concernScore: Double
             contraindicationScore = 0.0
 
             for (pi in ingredients) {

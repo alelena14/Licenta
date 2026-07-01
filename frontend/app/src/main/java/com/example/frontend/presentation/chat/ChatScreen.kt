@@ -545,8 +545,12 @@ private fun ChatInputBar(
                 // Input
                 OutlinedTextField(
                     value = value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier.weight(1f),
+                    onValueChange = {
+                        onValueChange(it.take(300))
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 56.dp, max = 140.dp),
                     placeholder = {
                         Text(
                             "Ask about your skin...",
@@ -564,9 +568,15 @@ private fun ChatInputBar(
                         unfocusedTextColor = Violet,
                         cursorColor = VioletMid
                     ),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = { onSend() }),
-                    singleLine = true, maxLines = 1
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Send
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSend = { onSend() }
+                    ),
+                    singleLine = false,
+                    minLines = 1,
+                    maxLines = 5
                 )
 
                 // Send

@@ -21,8 +21,10 @@ import java.io.File
 import javax.inject.Inject
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.core.graphics.scale
 import java.io.FileOutputStream
+import kotlinx.coroutines.Job
 
 sealed class SkinAnalysisState {
     object Idle : SkinAnalysisState()
@@ -50,20 +52,34 @@ class SkinAnalysisViewModel @Inject constructor(
     var detectedConcerns by mutableStateOf<List<String>>(emptyList())
         private set
 
+    private var analysisJob: Job? = null
+
     fun onPhotoSelected(uri: Uri) {
         selectedUri = uri
     }
 
     // Step 1
     fun analyzePhoto(uri: Uri) {
-        viewModelScope.launch {
+
+        analysisJob?.cancel()
+
+        analysisJob = viewModelScope.launch {
+
             _state.value = SkinAnalysisState.Analysing
+
             try {
                 val file = compressImage(uri)
                 val response = recommendationRepository.analyzePhoto(file)
+
                 detectedConcerns = response.userConcerns
                 _state.value = SkinAnalysisState.ConcernsReady(response.userConcerns)
+
             } catch (e: Exception) {
+
+                Log.e("SkinAnalysis", "Analysis failed")
+                Log.e("SkinAnalysis", "Exception: ${e::class.java.simpleName}")
+                Log.e("SkinAnalysis", "Message: ${e.message}", e)
+
                 _state.value = SkinAnalysisState.Error(
                     "We couldn't analyze your photo right now. Please try again in a few moments."
                 )
@@ -104,5 +120,13 @@ class SkinAnalysisViewModel @Inject constructor(
             resized.compress(Bitmap.CompressFormat.JPEG, quality, out)
         }
         return file
+    }
+
+    fun cancelAnalysis() {
+        analysisJob?.cancel()
+        analysisJob = null
+
+        detectedConcerns = emptyList()
+        _state.value = SkinAnalysisState.Idle
     }
 }

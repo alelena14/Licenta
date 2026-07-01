@@ -51,7 +51,7 @@ fun AboutSkinAiScreen(navController: NavController) {
                             listOf(Color(0xFF5B2FD4), Color(0xFF9B7BFF), Color(0xFFCEB8F5))
                         )
                     )
-                    .padding(top = 48.dp, bottom = 28.dp, start = 8.dp, end = 16.dp)
+                    .padding(top = 24.dp, bottom = 12.dp, start = 8.dp, end = 16.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { navController.popBackStack() }) {

@@ -64,31 +64,13 @@ def preprocess(img):
     img = np.expand_dims(img, axis=0)
     return img
 
-import time
-
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-
-    start = time.time()
-    logger.info("Request received")
-
     contents = await file.read()
-    logger.info(f"Read file: {time.time() - start:.2f}s")
-
     image = Image.open(io.BytesIO(contents)).convert("RGB")
-    logger.info(f"PIL load: {time.time() - start:.2f}s")
-
     image = np.array(image)
-    logger.info(f"Numpy conversion: {time.time() - start:.2f}s")
-
     inp = preprocess(image)
-    logger.info(f"Preprocess: {time.time() - start:.2f}s")
-
-    infer_start = time.time()
     preds = model.predict(inp, verbose=0)[0]
-    logger.info(f"Inference only: {time.time() - infer_start:.2f}s")
-
-    logger.info(f"Total request: {time.time() - start:.2f}s")
 
     results = [
         {"label": CLASS_NAMES[i], "confidence": float(val)}
@@ -104,6 +86,11 @@ async def analyze(file: UploadFile = File(...)):
         best = int(np.argmax(preds))
         selected = [{"label": CLASS_NAMES[best], "confidence": float(preds[best])}]
 
+    logger.info("Predictions:")
+
+    for label, score in zip(CLASS_NAMES, preds):
+        logger.info(f"{label}: {score:.4f}")
+        
     return {
         "all_predictions": results,
         "final_predictions": selected

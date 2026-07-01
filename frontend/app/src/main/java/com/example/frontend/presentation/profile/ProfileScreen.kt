@@ -33,6 +33,8 @@ import com.example.frontend.presentation.ui.DarkGreen
 import com.example.frontend.presentation.ui.PaleGreen
 import com.example.frontend.presentation.ui.VibrantGreen
 import com.example.frontend.data.model.ChatPrefillStore
+import com.google.firebase.auth.FirebaseAuth
+
 private val BgTop        = Color(0xFFCEB8F5)
 private val BgBottom     = Color(0xFFF4EEFF)
 private val Violet       = Color(0xFF3D1F8C)
@@ -339,7 +341,13 @@ fun ProfileScreen(
                         // ── Log out ───────────────────────────────────────────
                         OutlinedButton(
                             onClick  = {
-                                rootNavController.navigate(Screen.Login.route) { popUpTo(0) }
+                                FirebaseAuth.getInstance().signOut()
+
+                                rootNavController.navigate(Screen.Login.route) {
+                                    popUpTo(rootNavController.graph.id) {
+                                        inclusive = true
+                                    }
+                                }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()

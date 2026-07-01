@@ -33,8 +33,8 @@ import javax.inject.Singleton
 object AppModule {
 
 
-    // private const val BASE_URL = "https://licenta-6ixc.onrender.com"
-    private const val BASE_URL = "http://192.168.1.130:8080/"
+    private const val BASE_URL = "https://licenta-6ixc.onrender.com"
+    // private const val BASE_URL = "http://192.168.1.130:8080/"
 
     @Provides
     @Singleton
