@@ -9,15 +9,14 @@ import org.springframework.stereotype.Component
 class LanguageService {
 
     private val detector: LanguageDetector =
-        LanguageDetectorBuilder.fromAllLanguages()
-            .build()
+        LanguageDetectorBuilder.fromLanguages(
+            Language.ENGLISH
+        ).build()
 
     fun isEnglish(text: String): Boolean {
 
         if (text.isBlank()) return false
 
-        val language = detector.detectLanguageOf(text)
-
-        return language == Language.ENGLISH
+        return detector.detectLanguageOf(text) == Language.ENGLISH
     }
 }
