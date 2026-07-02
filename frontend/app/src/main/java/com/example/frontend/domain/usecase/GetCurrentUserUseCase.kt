@@ -15,9 +15,7 @@ class GetCurrentUserUseCase @Inject constructor(
             User(
                 id = response.id,
                 email = response.email,
-                username = response.username,
-                profileImageUrl = response.profileImageUrl,
-                age = response.age
+                username = response.username
             )
         }
     }

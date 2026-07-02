@@ -155,7 +155,7 @@ class RecommendationService(
                     contraindicationScore += finalContribution
 
                     if (finalContribution < CONTRAINDICATION_THRESHOLD) {
-                        warnings.add("⚠ ${ingredient.name} may worsen ${concern.displayName}")
+                        warnings.add("${ingredient.name} may worsen ${concern.displayName}")
                     }
                 }
 

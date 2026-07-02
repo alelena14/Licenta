@@ -97,7 +97,8 @@ class AiService(
             - Only return product types from the product type list.
             - If no product type is mentioned, return empty list for productTypes.
             - Target area must be one of the predefined values.
-            - Infer the most likely product types based on user intent.
+            - Extract ONLY product types that are explicitly mentioned by the user.
+            - Do NOT infer or guess product types.
             - Return at most 3 product types.
             - Do NOT explain anything.
             - Dark circles and under eye bags have the area 'eyes'
@@ -222,27 +223,17 @@ class AiService(
         val prompt = """
         You are a dermatology AI.
 
-        The following are AI predictions with confidence scores between 0 and 1.
-
-        Only use predictions with confidence higher then 0.4.
-        Ignore predictions with low confidence.
-        
-        If no prediction has sufficient confidence, return an empty concerns list.
-        
-        Predictions:
+        Based on detected skin conditions from an image:
         ${predictions.joinToString("\n") { "${it["label"]}: ${it["confidence"]}" }}
 
         Map these into VALID concern codes from this list:
         ${validCodes.joinToString(", ")}
 
         Rules:
-        - Confidence below 0.4 should normally be ignored.
-        - Do not infer additional concerns from low-confidence predictions.
-        - If all predictions are low confidence, return:
-        {
-          "concerns": [],
-          "area": "face"
-        }
+        - Only return concerns from the valid list
+        - Be medically logical (e.g. eyebags → dark_circles)
+        - Return 1-3 most relevant concerns
+        - Also decide area: "face" or "eyes"
 
         Return JSON only:
         {
@@ -529,9 +520,18 @@ class AiService(
         - CASUAL = greetings, thanks, small talk
         - BODY_CARE = body acne, body lotion, hands, legs, scalp, etc.
         - INGREDIENT_QUESTION = asks about ingredients like niacinamide, retinol, vitamin c
-        - PRODUCT_QUESTION = asks about a specific product
+        - PRODUCT_QUESTION = asks about a specific product or products
         - RECOMMENDATION = user wants products/routine suggestions
         - UNKNOWN = unclear skincare intent
+
+        If the message is only a short confirmation or rejection
+        (e.g. yes, no, yeah, nope, sure, okay, go ahead),
+        set:
+        
+        "isFollowUp": true
+        
+        Unless the message itself clearly contains a skincare request,
+        do not try to infer the intent.
 
         Examples:
 
@@ -563,6 +563,17 @@ class AiService(
           "productName": null,
           "isFollowUp": false,
           "rawQuery": "recommend a serum for acne"
+        }
+        
+        User: "Recomandă-mi o cremă pentru acnee"
+        {
+          "type": "UNKNOWN",
+          "concerns": [],
+          "productType": null,
+          "ingredient": null,
+          "productName": null,
+          "isFollowUp": false,
+          "rawQuery": "Recomandă-mi o cremă pentru acnee"
         }
 
         User message:

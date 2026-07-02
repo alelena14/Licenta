@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.frontend.navigation.bottomBar.BottomBarItem
 import com.example.frontend.presentation.Screen
 import com.example.frontend.presentation.ui.AppScreen
@@ -108,9 +109,12 @@ fun ProfileScreen(
             }
 
             navController.navigate(BottomBarItem.Chat.route) {
+                popUpTo(rootNavController.graph.findStartDestination().id) {
+                    saveState = true
+                }
                 launchSingleTop = true
+                restoreState = true
             }
-            clicked = false
         }
     }
     AppScreen { _ ->

@@ -59,7 +59,7 @@ class ProfileViewModel @Inject constructor(
                 val email = currentUser.email
                 val token = currentUser.getIdToken(true).await().token
                 if (token != null && email != null) {
-                    val userDeferred = async { getCurrentUserUseCase(UserDto(token, email, null, null, null)) }
+                    val userDeferred = async { getCurrentUserUseCase(UserDto(token, email, null)) }
                     val statsDeferred = async { profileRepository.getStats(token) }
 
                     userDeferred.await().onSuccess { user ->

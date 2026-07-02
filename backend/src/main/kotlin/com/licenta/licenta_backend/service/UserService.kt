@@ -10,7 +10,7 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-    fun authenticate(firebaseToken: String, username: String?, age: Int?, profileImageUrl: String?): User {
+    fun authenticate(firebaseToken: String, username: String?): User {
         val decodedToken = FirebaseAuth.getInstance()
             .verifyIdToken(firebaseToken)
 
@@ -26,9 +26,7 @@ class UserService(
         val newUser = User(
             firebaseUid = firebaseUid,
             email = email,
-            username = username,
-            age = age,
-            profileImageUrl = profileImageUrl
+            username = username
         )
 
         return userRepository.save(newUser)

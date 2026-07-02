@@ -89,7 +89,7 @@ fun PhotoPickScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Add a clear photo of your skin\nfor better and more accurate recommendations.",
+                text = "Add a clear photo of the affected area\nfor better and more accurate recommendations.",
                 color = VioletSoft,
                 fontSize = 13.sp,
                 lineHeight = 19.sp,

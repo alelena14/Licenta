@@ -140,7 +140,7 @@ fun ChatScreen(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
-                    text = "Take or choose a clear photo of your skin for AI analysis.",
+                    text = "Take or choose a clear photo of the affected area of your skin for AI analysis.",
                     color = VioletSoft,
                     fontSize = 13.sp
                 )

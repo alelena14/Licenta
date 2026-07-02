@@ -255,7 +255,7 @@ fun RegisterScreen(
 
                     // ── Sign Up Button ───────────────────────────────────────
                     Button(
-                        onClick = { viewModel.register(email, password, username, 0) },
+                        onClick = { viewModel.register(email, password, username) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 24.dp)

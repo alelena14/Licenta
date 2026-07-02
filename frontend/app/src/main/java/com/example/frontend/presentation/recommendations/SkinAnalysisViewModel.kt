@@ -107,6 +107,10 @@ class SkinAnalysisViewModel @Inject constructor(
         detectedConcerns = emptyList()
     }
 
+    fun backToPreview() {
+        _state.value = SkinAnalysisState.Idle
+    }
+
     private fun compressImage(uri: Uri, maxSize: Int = 1280, quality: Int = 85): File {
         val inputStream = appContext.contentResolver.openInputStream(uri)
         val original = BitmapFactory.decodeStream(inputStream)
@@ -126,7 +130,8 @@ class SkinAnalysisViewModel @Inject constructor(
         analysisJob?.cancel()
         analysisJob = null
 
-        detectedConcerns = emptyList()
         _state.value = SkinAnalysisState.Idle
+        selectedUri = null
+        detectedConcerns = emptyList()
     }
 }

@@ -4,10 +4,11 @@ import com.licenta.licenta_backend.dto.*
 import com.licenta.licenta_backend.repository.ConcernRepository
 import com.licenta.licenta_backend.repository.ProductRepository
 import com.licenta.licenta_backend.utils.ConcernCompatibility
+import com.licenta.licenta_backend.utils.LanguageService
 import com.licenta.licenta_backend.utils.ProductTypeCategory
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-
+import com.fasterxml.jackson.module.kotlin.readValue
 private data class RecommendationGroup(
     val area: String,
     val concerns: List<String>,
@@ -19,7 +20,8 @@ class ChatService(
     private val aiService: AiService,
     private val recommendationService: RecommendationService,
     private val concernRepository: ConcernRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val languageService: LanguageService,
 ) {
 
     fun chat(
@@ -46,9 +48,34 @@ class ChatService(
                 reply = "I didn't receive a message."
             )
 
-        val start = System.currentTimeMillis()
+        val simpleReplies = setOf(
+            "yes",
+            "no",
+            "yeah",
+            "nope",
+            "ok",
+            "okay",
+            "thanks",
+            "thank you",
+            "please"
+        )
+
+        if (lastUserMessage.trim().lowercase() !in simpleReplies &&
+            !languageService.isEnglish(lastUserMessage)
+        ) {
+            return ChatResponse(
+                reply = "SkinAI currently supports English only. Please ask your question in English."
+            )
+        }
+
         val intent = aiService.detectIntent(lastUserMessage)
-        println("detectIntent: ${System.currentTimeMillis() - start} ms")
+
+
+        if (intent.isFollowUp) {
+            return ChatResponse(
+                reply = handleGeneralMessage(lastUserMessage, request.messages)
+            )
+        }
 
         when (intent.type) {
 
@@ -239,12 +266,13 @@ class ChatService(
 
         data class ScoredProduct(
             val dto: ProductRecommendation,
-            val area: String
+            val area: String,
+            val groupId: Int
         )
 
         val allScored = mutableListOf<ScoredProduct>()
 
-        recommendationGroups.forEach { group ->
+        recommendationGroups.forEachIndexed { index, group ->
 
             val concernIds = concernRepository
                 .findByCodeIn(group.concerns)
@@ -273,44 +301,30 @@ class ChatService(
                             warnings = rec.warnings,
                             url = rec.product.url
                         ),
-                        area = group.area
+                        area = group.area,
+                        groupId = index
                     )
                 )
             }
         }
 
-        val unique = allScored.distinctBy { it.dto.id }
+        val groupedProducts = allScored
+            .groupBy { it.groupId }
+            .mapValues { (_, products) ->
+                products.distinctBy { it.dto.id }
+            }
 
-//        var typeNotFound = false
-//
-//        val filtered = if (requestedType != null) {
-//
-//            val faceFiltered = unique
-//                .filter { it.area == "face" }
-//                .filter {
-//                    ProductTypeCategory.fromDbType(it.dto.type) == requestedType
-//                }
-//
-//            val eyeProducts = unique
-//                .filter { it.area == "eyes" }
-//
-//            if (faceFiltered.isNotEmpty()) {
-//                (faceFiltered + eyeProducts)
-//                    .distinctBy { it.dto.id }
-//            } else {
-//                typeNotFound = unique.any { it.area == "face" }
-//                unique
-//            }
-//
-//        } else {
-//            unique
-//        }
+        val maxPerGroupFinal = if (recommendationGroups.size == 1) 3 else 2
 
-        val filtered = unique
+        val productsByGroup: Map<Int, List<ProductRecommendation>> =
+            recommendationGroups.indices.associateWith { groupIndex ->
+                groupedProducts[groupIndex]
+                    ?.take(maxPerGroupFinal)
+                    ?.map { it.dto }
+                    ?: emptyList()
+            }
 
-        val finalProducts = filtered
-            .map { it.dto }
-            .take(3)
+        val finalProducts = productsByGroup.values.flatten()
 
         if (finalProducts.isEmpty()) {
             return ChatResponse(
@@ -324,19 +338,36 @@ class ChatService(
             )
         }
 
-        val context = buildProductContext(
-            recommendationGroups,
-            concernsByArea,
-            finalProducts
-        )
+        val replies = mutableListOf<String>()
 
-        val reply = generateRecommendationResponse(
-            userMessage = intent.rawQuery,
-            history = request.messages.dropLast(1),
-            context = context,
-            productType = extractedProductTypes.firstOrNull(),
-            recommendationGroups = recommendationGroups
-        )
+        recommendationGroups.forEachIndexed { index, group ->
+
+            val groupProducts = productsByGroup[index] ?: emptyList()
+
+            if (groupProducts.isEmpty()) return@forEachIndexed
+
+            val context = buildProductContext(
+                groups = listOf(group),
+                concernsByArea = mapOf(group.area to group.concerns),
+                products = groupProducts
+            )
+
+            val scopedQuery = "Recommend and explain skincare products for the " +
+                    "${group.area} area, specifically for: ${group.concerns.joinToString(", ")}."
+
+            val groupReply = generateRecommendationResponse(
+                userMessage = scopedQuery,
+                history = request.messages.dropLast(1),
+                context = context,
+                productType = extractedProductTypes.firstOrNull(),
+                recommendationGroups = listOf(group),
+                productsForContext = groupProducts
+            )
+
+            replies.add("**For ${group.area} — ${group.concerns.joinToString(", ")}:**\n$groupReply")
+        }
+
+        val reply = replies.joinToString("\n\n")
 
         return ChatResponse(
             reply = reply,
@@ -449,7 +480,7 @@ class ChatService(
                 Keep responses concise.
             """.trimIndent(),
 
-            maxTokens = 150
+            maxTokens = 250
         )
 
         return aiService.callGroq(requestBody)
@@ -465,7 +496,8 @@ class ChatService(
         history: List<ChatMessage>,
         context: String,
         productType: String?,
-        recommendationGroups: List<RecommendationGroup>
+        recommendationGroups: List<RecommendationGroup>,
+        productsForContext: List<ProductRecommendation>
     ): String {
 
         val historyFormatted = history
@@ -475,45 +507,90 @@ class ChatService(
                 "${it.role}: ${it.content}"
             }
 
-        val groupNote =
-            if (recommendationGroups.size > 1)
-                "Some products target different concerns. Mention this naturally without creating explicit groups."
-            else ""
+        val productTypeInfo = productType?.let {
+            "\nRequested product type: $it"
+        } ?: ""
 
         val requestBody = aiService.buildRequestBody(
+
             userPrompt = if (historyFormatted.isNotBlank())
-                "Previous conversation:\n$historyFormatted\n\nUser: $userMessage"
+                """
+                    Previous conversation:
+                    $historyFormatted
+                
+                    User: $userMessage$productTypeInfo
+                    """.trimIndent()
             else userMessage,
 
             systemPrompt = """
-                You are SkinAI, a concise skincare assistant.
+            You are SkinAI.
 
-                $context
+            The recommendation algorithm has already selected the correct skincare products.
 
-                Rules:
-                - Use plain text only
-                - Write 2-4 short paragraphs
-                - Recommend at most 3 products
-                - Mention each product only once
-                - Give one concise reason why each product is a good match
-                - Mention key ingredients only when especially relevant
-                - Keep the response under 120 words
-                - End with one short tip or question
-                $groupNote
-            """.trimIndent(),
+            $context
 
-            maxTokens = 300
+            Your task is ONLY to explain, for EACH numbered product above, why it is suitable.
+
+            CRITICAL: You must NEVER write the product's brand or name yourself.
+            Refer to products ONLY by their number (1, 2, 3...).
+            Do NOT invent, guess, or paraphrase any brand or product name.
+
+            Return JSON ONLY, no markdown, no explanation outside JSON:
+
+            {
+              "items": [
+                { "index": 1, "text": "one short sentence explaining why this product helps, mentioning ingredients only if listed above" },
+                { "index": 2, "text": "..." }
+              ],
+              "closing": "one short skincare tip or question, generic, no product names"
+            }
+
+            Rules:
+            - One item per product number listed above, same order, none skipped, none added.
+            - Do not mention any concern, ingredient, or product not listed above.
+            - Keep each "text" under 30 words.
+        """.trimIndent(),
+
+            maxTokens = 500
         )
 
-        val response = aiService.callGroq(requestBody)
+        val raw = aiService.callGroq(requestBody)
+            ?: return "I found some products that may help your concerns."
 
-        return response
-            ?.replace("**", "")
-            ?.replace("*", "")
-            ?.trim()
-            ?: "I found some products that may help your concerns."
+        return try {
+            val mapper = com.fasterxml.jackson.module.kotlin.jacksonObjectMapper()
+            val parsed: Map<String, Any> = mapper.readValue(raw)
+
+            val items = (parsed["items"] as? List<*>)
+                ?.filterIsInstance<Map<String, Any>>()
+                ?.associateBy { (it["index"] as? Number)?.toInt() }
+                ?: emptyMap()
+
+            val closing = parsed["closing"] as? String ?: ""
+
+            val products = recommendationGroups.first().let { group ->
+                group // nu folosim direct, doar pentru claritate; produsele reale vin din afară
+            }
+
+            // reconstruim folosind produsele reale, NU ce a scris modelul
+            val sb = StringBuilder()
+
+            productsForContext.forEachIndexed { i, product ->
+                val text = (items[i + 1]?.get("text") as? String)?.trim() ?: ""
+                sb.appendLine("**${product.brand} - ${product.name}**")
+                if (text.isNotBlank()) sb.appendLine(text)
+                sb.appendLine()
+            }
+
+            if (closing.isNotBlank()) sb.appendLine(closing)
+
+            sb.toString().trim()
+
+        } catch (e: Exception) {
+            println("generateRecommendationResponse parse error: ${e.message}")
+            "I found some products that may help your concerns."
+        }
     }
-
     // ─────────────────────────────────────────────────────────
     // PRODUCT CONTEXT
     // ─────────────────────────────────────────────────────────
@@ -533,18 +610,13 @@ class ChatService(
 
         sb.appendLine("USER CONCERNS: $areaDescription")
 
-        if (groups.size > 1) {
+        val group = groups.first()
 
-            sb.appendLine("GROUPS:")
+        sb.appendLine("AREA: ${group.area}")
+        sb.appendLine("CONCERNS: ${group.concerns.joinToString(", ")}")
 
-            groups.forEachIndexed { i, g ->
-                sb.appendLine(
-                    "${i + 1}. [${g.area}] ${g.concerns.joinToString(", ")}"
-                )
-            }
-        }
-
-        sb.appendLine("\nPRODUCTS:")
+        sb.appendLine()
+        sb.appendLine("RECOMMENDED PRODUCTS:")
 
         products.forEachIndexed { index, p ->
 
@@ -553,10 +625,14 @@ class ChatService(
                         "(${p.type}, ${"%.0f".format(p.score * 100)}% match)"
             )
 
+            sb.appendLine("Reason: ${p.explanation}")
+
             if (p.warnings.isNotEmpty()) {
                 sb.appendLine("Warning: ${p.warnings.first()}")
             }
         }
+
+        sb.appendLine()
 
         return sb.toString()
     }

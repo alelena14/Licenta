@@ -45,7 +45,7 @@ class ChatConsoleRunner(
 
             when (input.lowercase()) {
                 "exit", "quit" -> {
-                    println("Goodbye! 👋")
+                    println("Goodbye!")
                     break
                 }
                 "clear" -> {
@@ -85,7 +85,7 @@ class ChatConsoleRunner(
                             println("  │    ${shortExplanation}")
                         }
                         if (product.warnings.isNotEmpty()) {
-                            println("  │    ⚠️  ${product.warnings.take(2).joinToString("; ")}")
+                            println("  │      ${product.warnings.take(2).joinToString("; ")}")
                         }
                         if (i < response.products.size - 1) println("  │")
                     }

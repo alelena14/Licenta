@@ -14,9 +14,7 @@ class UserController(private val userService: UserService) {
     fun syncUser(@RequestBody userData: UserDto): ResponseEntity<User> {
         val user = userService.authenticate(
             firebaseToken = userData.token,
-            username = userData.username,
-            age = userData.age,
-            profileImageUrl = userData.profileImageUrl
+            username = userData.username
         )
         return ResponseEntity.ok(user)
     }

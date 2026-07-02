@@ -49,7 +49,7 @@ class AuthViewModel @Inject constructor(
                 val result = auth.signInWithEmailAndPassword(email, password).await()
                 val token = result.user?.getIdToken(true)?.await()?.token ?: ""
 
-                val userDto = UserDto(token, email, null, null, null)
+                val userDto = UserDto(token, email, null)
                 val syncResult = userRepository.syncUserWithBackend(userDto)
 
                 if (syncResult.isSuccess) {
@@ -83,9 +83,7 @@ class AuthViewModel @Inject constructor(
     fun register(
         email: String,
         password: String,
-        username: String,
-        age: Int,
-        profileImageUrl: String? = null
+        username: String
     ) {
         if (username.isBlank()) {
             _authState.value = AuthState.Error("Please enter a username.")
@@ -102,18 +100,13 @@ class AuthViewModel @Inject constructor(
             return
         }
 
-        if (age <= 0) {
-            _authState.value = AuthState.Error("Please enter a valid age.")
-            return
-        }
-
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
                 val token = result.user?.getIdToken(true)?.await()?.token ?: ""
 
-                val userDto = UserDto(token, email, username, profileImageUrl, age)
+                val userDto = UserDto(token, email, username)
                 val syncResult = userRepository.syncUserWithBackend(userDto)
 
                 if (syncResult.isSuccess) {

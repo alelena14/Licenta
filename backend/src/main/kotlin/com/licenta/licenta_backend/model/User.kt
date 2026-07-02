@@ -19,20 +19,12 @@ data class User(
 
     @Column(nullable = true, unique = true)
     val username: String? = null,
-
-    @Column(nullable = true)
-    val profileImageUrl: String? = null,
-
-    @Column(nullable = true)
-    val age: Int? = null
 ) {
 
     fun toResponse() = UserResponse(
         id = id,
         email = email,
-        username = username,
-        profileImageUrl = profileImageUrl,
-        age = age
+        username = username
     )
 }
 

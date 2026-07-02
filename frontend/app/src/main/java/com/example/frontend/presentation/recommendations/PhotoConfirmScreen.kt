@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -36,7 +37,8 @@ fun PhotoConfirmScreen(
     imageUri: Uri,
     allConcerns: List<String>,
     selectedConcerns: Set<String>,
-    onGetRecs: (List<String>) -> Unit
+    onGetRecs: (List<String>) -> Unit,
+    onBack: () -> Unit
 ) {
 
     var selected by remember {
@@ -109,6 +111,21 @@ fun PhotoConfirmScreen(
                 )
             )
     ) {
+
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(start = 12.dp, top = 8.dp)
+                .zIndex(10f)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Violet
+            )
+        }
 
         LazyColumn(
             modifier = Modifier

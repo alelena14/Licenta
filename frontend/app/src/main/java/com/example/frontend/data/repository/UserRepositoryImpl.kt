@@ -15,7 +15,7 @@ class UserRepositoryImpl @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Eroare Server: ${response.code()}"))
+                Result.failure(Exception("Server error: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

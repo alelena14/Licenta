@@ -125,8 +125,8 @@ fun MainScreen(
                         isLoading    = state is SkinAnalysisState.Analysing,
                         errorMessage = (state as? SkinAnalysisState.Error)?.message,
                         onBack = {
-                            skinAnalysisVm.cancelAnalysis()
                             navController.popBackStack()
+                            skinAnalysisVm.cancelAnalysis()
                         },
                         onRetake = {
                             skinAnalysisVm.cancelAnalysis()
@@ -153,6 +153,10 @@ fun MainScreen(
                         selectedConcerns = skinAnalysisVm.detectedConcerns.toSet(),
                         onGetRecs        = { confirmed ->
                             skinAnalysisVm.saveConcernsToProfile(confirmed)
+                        },
+                        onBack = {
+                            skinAnalysisVm.backToPreview()
+                            navController.popBackStack()
                         }
                     )
                 }

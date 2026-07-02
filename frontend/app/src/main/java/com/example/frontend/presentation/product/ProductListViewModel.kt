@@ -58,24 +58,6 @@ class ProductListViewModel @Inject constructor(
         "Sunscreen", "Emulsion", "Eye Mask", "Toner", "Eye Moisturizer"
     )
 
-    init {
-        loadTags()
-
-        combine(_search, _selectedTag) { search, tag ->
-            Pair(search, tag)
-        }
-            .debounce(400)
-            .onEach { (search, tag) ->
-
-                if (search.isBlank() && tag == null) {
-                    loadHome()
-                } else {
-                    loadProducts(search, tag)
-                }
-            }
-            .launchIn(viewModelScope)
-    }
-
     private fun loadHome() {
 
         viewModelScope.launch {
@@ -212,12 +194,10 @@ class ProductListViewModel @Inject constructor(
 
     fun onTagSelected(tag: String?) {
         _selectedTag.value  = if (_selectedTag.value == tag) null else tag
-        _selectedType.value = null
     }
 
     fun onTypeSelected(type: String) {
         _selectedType.value = if (_selectedType.value == type) null else type
-        _selectedTag.value = null
     }
 
     fun clearFilters() {

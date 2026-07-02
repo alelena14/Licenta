@@ -49,6 +49,8 @@ dependencies {
 	implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+	implementation("com.github.pemistahl:lingua:1.2.2")
 }
 
 kotlin {
