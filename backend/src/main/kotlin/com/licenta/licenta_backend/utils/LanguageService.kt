@@ -10,7 +10,8 @@ class LanguageService {
 
     private val detector: LanguageDetector =
         LanguageDetectorBuilder.fromLanguages(
-            Language.ENGLISH
+            Language.ENGLISH,
+            Language.ROMANIAN
         ).build()
 
     fun isEnglish(text: String): Boolean {
